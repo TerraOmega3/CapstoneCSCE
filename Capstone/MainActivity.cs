@@ -33,7 +33,7 @@ namespace Capstone
             drawer.AddDrawerListener(toggle);
             toggle.SyncState();
 
-            //Allows for the buttons in the navigation tab to work on click
+            //Allows for the buttons in the navigation tab to work on button
             NavigationView navigationView = FindViewById<NavigationView>(Resource.Id.nav_view);
             navigationView.SetNavigationItemSelectedListener(this);
         }
