@@ -19,8 +19,10 @@
 			android:layout_marginBottom="0.0dp" />
 	</android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_main" />
-
+    
+	<include
+	android:id="@+id/all_container"	
+    layout="@layout/content_main"/>
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
