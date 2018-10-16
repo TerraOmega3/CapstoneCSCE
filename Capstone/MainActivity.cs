@@ -15,6 +15,7 @@ using Android.Support.V7.App;
 using Android.Views;
 using Android.Widget;
 using Plugin.Geolocator;
+using RestSharp;
 
 namespace Capstone
 {
@@ -22,7 +23,7 @@ namespace Capstone
     public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener
     {
         //Change this to your own network ID name or in the schools case "tamulink-wpa"
-        const string networkSSID = "\"" + "tamulink-wpa" + "\"";
+        const string networkSSID = "\"" + "OtterlyAdorable" + "\"";
        
         TextView wifiText;
         Button wifiButton;
@@ -33,6 +34,16 @@ namespace Capstone
             base.OnCreate(savedInstanceState);
             //Creates main page layout by referencing activity_main.axml
             SetContentView(Resource.Layout.activity_main);
+
+            //Query the database and pull all records from the first collection
+            var client = new RestClient("https://testdb-05fa.restdb.io/rest/first");
+            var request = new RestRequest(Method.GET);
+            request.AddHeader("cache-control", "no-cache");
+            request.AddHeader("x-apikey", "7118ad356550e03d458063ea0001e3009b7fc");
+            request.AddHeader("content-type", "application/json");
+            IRestResponse response = client.Execute(request);
+            Console.WriteLine("Database pull complete");
+            Console.WriteLine(response.Content);
 
             var locator = CrossGeolocator.Current;
             locator.DesiredAccuracy = 10;
