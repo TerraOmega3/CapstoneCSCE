@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using Android.App;
 using Android.Content;
 using Android.Locations;
@@ -48,6 +49,7 @@ namespace Capstone
             var locator = CrossGeolocator.Current;
             locator.DesiredAccuracy = 10;
             //Everything below simply connects to wifi given the prewritten networkSSID. To test on your own wifi just change it to your wifiName
+                //Do we really need to connect to the given SSID anymore since we are scanning access points and listing information?
             var conf = new WifiConfiguration();
             conf.Ssid = networkSSID;
             conf.AllowedKeyManagement.Set((int)KeyManagementType.None);
@@ -105,6 +107,12 @@ namespace Capstone
             //Calls the geolocator function on press (The function also recalls the AP scan)
             wifiButton.Click += async (object sender, EventArgs args) => { await findPosition(sender, args); };
 
+            //Calls the polling function every 3 seconds
+            System.Timers.Timer pollTimer = new System.Timers.Timer();
+            pollTimer.Interval = 3000; // in miliseconds
+            pollTimer.Elapsed += pollWiFi;
+            pollTimer.Enabled = true;
+
             //Displays a three dot vertical button widget which displays a list of actions (in this case none at the moment)
             Android.Support.V7.Widget.Toolbar toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
@@ -124,6 +132,13 @@ namespace Capstone
             NavigationView navigationView = FindViewById<NavigationView>(Resource.Id.nav_view);
             navigationView.SetNavigationItemSelectedListener(this);
         }
+
+        //Function to poll WiFi RSSID information, and display it
+        private void pollWiFi(object sender, ElapsedEventArgs e)
+        {
+            findPosition(sender, e);
+        }
+
         //Function to find current GPS coordinates for footprinting use
         async Task findPosition(object sender, EventArgs e)
         {
