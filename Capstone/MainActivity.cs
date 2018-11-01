@@ -30,6 +30,7 @@ namespace Capstone
         Button wifiButton;
         WifiManager wifiManager;
         public IList<ScanResult> scanResults;
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -111,7 +112,7 @@ namespace Capstone
             System.Timers.Timer pollTimer = new System.Timers.Timer();
             pollTimer.Interval = 3000; // in miliseconds
             pollTimer.Elapsed += pollWiFi;
-            pollTimer.Enabled = true;
+            pollTimer.Start();
 
             //Displays a three dot vertical button widget which displays a list of actions (in this case none at the moment)
             Android.Support.V7.Widget.Toolbar toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.toolbar);
@@ -136,7 +137,7 @@ namespace Capstone
         //Function to poll WiFi RSSID information, and display it
         private void pollWiFi(object sender, ElapsedEventArgs e)
         {
-            findPosition(sender, e);
+            RunOnUiThread(async() => { await findPosition(sender, e); });
         }
 
         //Function to find current GPS coordinates for footprinting use
