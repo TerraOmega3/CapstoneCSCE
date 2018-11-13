@@ -29,8 +29,6 @@ namespace Capstone
         const string networkSSID = "\"" + "tamulink-wpa" + "\"";
        
         TextView wifiText;
-        TextView dbText;
-        Button wifiButton;
         WifiManager wifiManager;
         public int compare;
         public IList<ScanResult> scanResults;
@@ -46,8 +44,6 @@ namespace Capstone
             var baseUrl = "https://testdb-05fa.restdb.io/rest/";
             client = new RestClient(baseUrl);
 
-            var locator = CrossGeolocator.Current;
-            locator.DesiredAccuracy = 10;
             //Everything below simply connects to wifi given the prewritten networkSSID. To test on your own wifi just change it to your wifiName
             //Do we really need to connect to the given SSID anymore since we are scanning access points and listing information?
             var conf = new WifiConfiguration();
@@ -84,7 +80,7 @@ namespace Capstone
             //Connect to the main_text on Content_main layer
             wifiText = (TextView)FindViewById(Resource.Id.main_text);
 
-            //Calls the polling function every 3 seconds
+            //Calls the polling function every 4 seconds
             System.Timers.Timer pollTimer = new System.Timers.Timer();
             pollTimer.Interval = 4000; // in miliseconds
             pollTimer.Elapsed += pollWiFi;
@@ -159,6 +155,7 @@ namespace Capstone
                 quickSort(arr, pi + 1, high);
             }
         }
+
         //Function to find current GPS coordinates for footprinting use
         async Task findPosition(object sender, EventArgs e)
         {
