@@ -15,6 +15,7 @@ using Android.Support.V4.Widget;
 using Android.Support.V7.App;
 using Android.Views;
 using Android.Widget;
+using Java.Util;
 using Plugin.Geolocator;
 using RestSharp;
 using Newtonsoft.Json;
@@ -28,8 +29,10 @@ namespace Capstone
         const string networkSSID = "\"" + "tamulink-wpa" + "\"";
        
         TextView wifiText;
+        TextView dbText;
         Button wifiButton;
         WifiManager wifiManager;
+        public int compare;
         public IList<ScanResult> scanResults;
         RestClient client;
 
@@ -46,7 +49,7 @@ namespace Capstone
             var locator = CrossGeolocator.Current;
             locator.DesiredAccuracy = 10;
             //Everything below simply connects to wifi given the prewritten networkSSID. To test on your own wifi just change it to your wifiName
-                //Do we really need to connect to the given SSID anymore since we are scanning access points and listing information?
+            //Do we really need to connect to the given SSID anymore since we are scanning access points and listing information?
             var conf = new WifiConfiguration();
             conf.Ssid = networkSSID;
             conf.AllowedKeyManagement.Set((int)KeyManagementType.None);
@@ -62,7 +65,7 @@ namespace Capstone
                 var mawifi = (WifiManager)GetSystemService(WifiService);
                 mawifi.SetWifiEnabled(true);
             }
-            
+
             wifiManager = (WifiManager)GetSystemService(WifiService);
             wifiManager.AddNetwork(conf);
             var list = wifiManager.ConfiguredNetworks;
@@ -77,36 +80,13 @@ namespace Capstone
                     break;
                 }
             }
-            
-            //Gather WifiInfo data
-            WifiInfo wifiInfo = wifiManager.ConnectionInfo;
 
             //Connect to the main_text on Content_main layer
             wifiText = (TextView)FindViewById(Resource.Id.main_text);
 
-            //Scan all nearby AccessPoints
-            wifiManager.StartScan();
-            scanResults = wifiManager.ScanResults;
-            
-            //Display to main_content the first 3 Accesspoints
-            wifiText.Text = wifiInfo.SSID + "";
-            for (int i = 0; i < 3; i++)
-            {
-                ScanResult AccessPoint = scanResults[i];
-                wifiText.Append("\n AP SSID: " + AccessPoint.Bssid + "\n RSSI: " + AccessPoint.Level);
-            }
-            //Chain text to include wifi info items (Note: rssi, BSSID, and linkspeed can all be called after getting wifiInfo)
-            // BSSID: AP address, LinkSpeed is the internet speed in Mbps, Rssi is in decibals so from -80 to -10 where -10 is a better connection
-            
-            //Create and connect to button from main_content
-            wifiButton = FindViewById<Button>(Resource.Id.button1);
-
-            //Calls the geolocator function on press (The function also recalls the AP scan)
-            wifiButton.Click += async (object sender, EventArgs args) => { await findPosition(sender, args); };
-
             //Calls the polling function every 3 seconds
             System.Timers.Timer pollTimer = new System.Timers.Timer();
-            pollTimer.Interval = 3000; // in miliseconds
+            pollTimer.Interval = 4000; // in miliseconds
             pollTimer.Elapsed += pollWiFi;
             pollTimer.Start();
 
@@ -133,14 +113,58 @@ namespace Capstone
         //Function to poll WiFi RSSID information, and display it
         private void pollWiFi(object sender, ElapsedEventArgs e)
         {
-            RunOnUiThread(async() => { await findPosition(sender, e); });
+            RunOnUiThread(async () => { await findPosition(sender, e); });
         }
 
+        static int partition(IList<ScanResult> arr, int low, int high)
+        {
+            ScanResult pivot = arr[high];
+
+            // index of smaller element 
+            int i = (low - 1);
+            for (int j = low; j < high; j++)
+            {
+                // If current element is smaller  
+                // than or equal to pivot 
+                if (arr[j].Level >= pivot.Level)
+                {
+                    i++;
+
+                    // swap arr[i] and arr[j] 
+                    ScanResult temp = arr[i];
+                    arr[i] = arr[j];
+                    arr[j] = temp;
+                }
+            }
+
+            // swap arr[i+1] and arr[high] (or pivot) 
+            ScanResult temp1 = arr[i + 1];
+            arr[i + 1] = arr[high];
+            arr[high] = temp1;
+
+            return i + 1;
+        }
+        static void quickSort(IList<ScanResult> arr, int low, int high)
+        {
+            if (low < high)
+            {
+
+                /* pi is partitioning index, arr[pi] is  
+                now at right place */
+                int pi = partition(arr, low, high);
+
+                // Recursively sort elements before 
+                // partition and after partition 
+                quickSort(arr, low, pi - 1);
+                quickSort(arr, pi + 1, high);
+            }
+        }
         //Function to find current GPS coordinates for footprinting use
         async Task findPosition(object sender, EventArgs e)
         {
+           
             var locator = CrossGeolocator.Current;
-            //How accurate to the meter. IE 500 would result in coordinates being 500 meters within your vicinity
+           //How accurate to the meter. IE 500 would result in coordinates being 500 meters within your vicinity
             locator.DesiredAccuracy = 1;
             //Get Position
             var position = await locator.GetPositionAsync(TimeSpan.FromMilliseconds(500));
@@ -180,8 +204,8 @@ namespace Capstone
             //Call the AP scan function
             wifiManager.StartScan();
             scanResults = wifiManager.ScanResults;
-            for (int i = 0; i < 3; i++)
-            //foreach(ScanResult AccessPoint in scanResults)
+            quickSort(scanResults, 0, scanResults.Count - 1);
+            for (int i = 0; i < 10; i++)
             {
                 ScanResult AccessPoint = scanResults[i];
                 wifiText.Append("\n AP SSID: " + AccessPoint.Bssid + "\n RSSI: " + AccessPoint.Level);
@@ -213,6 +237,7 @@ namespace Capstone
                 }
             }
         }
+        
         //What happens when someone presses the back button?
         public override void OnBackPressed()
         {
