@@ -164,16 +164,14 @@ namespace Capstone
 
             IRestResponse response = client.Execute(request);
             Fingerprint fp_response = new Fingerprint();
-            //var db_text = "";
             if (response.IsSuccessful)
             {
                 string json_text = response.Content;
                 fp_response = JsonConvert.DeserializeObject<Fingerprint>(json_text);
-                //db_text += fp_response.fp_id + " " + fp_response.fp_latitude + " " + fp_response.fp_longitude + "\n";
+                Console.WriteLine("NEW FINGERPRINT " + fp_response.fp_latitude + " " + fp_response.fp_longitude);
             }
             else
             {
-                //db_text += response.StatusDescription + " " + response.ErrorMessage;
                 Console.WriteLine(response.StatusDescription);
                 Console.WriteLine(response.ErrorMessage);
                 Console.WriteLine(response.ErrorException);
@@ -183,6 +181,7 @@ namespace Capstone
             wifiManager.StartScan();
             scanResults = wifiManager.ScanResults;
             for (int i = 0; i < 3; i++)
+            //foreach(ScanResult AccessPoint in scanResults)
             {
                 ScanResult AccessPoint = scanResults[i];
                 wifiText.Append("\n AP SSID: " + AccessPoint.Bssid + "\n RSSI: " + AccessPoint.Level);
@@ -205,11 +204,9 @@ namespace Capstone
                 {
                     string json_text = response2.Content;
                     arp_response = JsonConvert.DeserializeObject<ApRssiPair>(json_text);
-                    //db_text += arp_response.ap_rssi_id + " " + arp_response.rssi + " " + arp_response.ap_mac_addr + "\n";
                 }
                 else
                 {
-                    //db_text += response2.StatusDescription + " " + response2.ErrorMessage;
                     Console.WriteLine(response2.StatusDescription);
                     Console.WriteLine(response2.ErrorMessage);
                     Console.WriteLine(response2.ErrorException);

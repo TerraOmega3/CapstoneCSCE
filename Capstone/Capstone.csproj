@@ -59,7 +59,7 @@
     <Reference Include="Mono.Android" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="dbExamples.txt" />
+    <Compile Include="DatabaseObjects.cs" />
     <Compile Include="Fragments\LocalizationActivity.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
