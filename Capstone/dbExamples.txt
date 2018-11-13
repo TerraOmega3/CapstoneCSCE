@@ -1,0 +1,124 @@
+﻿//setup for all requests
+var baseUrl = "https://testdb-05fa.restdb.io/rest/";
+var client = new RestClient(baseUrl);
+
+/************************************************************************************************/
+
+//get fingerprint data with ap_rssi data
+var request = new RestRequest(Method.GET);
+request.Resource = "fingerprint-test";
+request.AddHeader("cache-control", "no-cache");
+request.AddHeader("x-apikey", "7118ad356550e03d458063ea0001e3009b7fc");
+request.AddHeader("content-type", "application/json");
+
+//include q parameter for queries
+request.AddParameter("q", "{\"fp_id\":3}");
+//include fetchchildren parameter if you want to access ApRssiPair child table
+request.AddParameter("fetchchildren", "true");
+
+IRestResponse response = client.Execute(request);
+var db_text = "";
+if (response.IsSuccessful)
+{
+	string json_text = response.Content;
+List<Fingerprint> ds = JsonConvert.DeserializeObject<List<Fingerprint>>(json_text);
+	foreach (Fingerprint fp in ds)
+	{
+		//display fingerprint
+		db_text += fp.fp_id + " " + fp.fp_latitude + " " + fp.fp_longitude + "\n";
+		foreach(ApRssiPair arp in fp.ap_rssi)
+		{
+			//display ap-rssi-pair
+			db_text += arp.ap_rssi_id + " " + arp.rssi + " " + arp.ap_mac_addr + "\n";
+		}
+	}
+}
+else
+{
+	db_text = response.StatusDescription + " " + response.ErrorMessage;
+	Console.WriteLine(response.ErrorException);
+}
+
+/************************************************************************************************/
+
+//get ap-rssi-pair data
+var request = new RestRequest(Method.GET);
+request.Resource = "ap-rssi-pair-test";
+request.AddHeader("cache-control", "no-cache");
+request.AddHeader("x-apikey", "7118ad356550e03d458063ea0001e3009b7fc");
+request.AddHeader("content-type", "application/json");
+
+IRestResponse response = client.Execute(request);
+var db_text = "";
+if (response.IsSuccessful)
+{
+	string json_text = response.Content;
+List<ApRssiPair> ds = JsonConvert.DeserializeObject<List<ApRssiPair>>(json_text);
+	foreach (ApRssiPair arp in ds)
+	{
+		//display ap-rssi-pair
+		db_text += arp.ap_rssi_id + " " + arp.rssi + " " + arp.ap_mac_addr + "\n";
+	}
+}
+else
+{
+	db_text = response.StatusDescription + " " + response.ErrorMessage;
+	Console.WriteLine(response.ErrorException);
+}
+
+/************************************************************************************************/
+
+//insert new fingerprint
+var request = new RestRequest(Method.POST);
+request.Resource = "fingerprint-test";
+request.AddHeader("cache-control", "no-cache");
+request.AddHeader("x-apikey", "7118ad356550e03d458063ea0001e3009b7fc");
+request.AddHeader("content-type", "application/json");
+
+Fingerprint fingerprint = new Fingerprint();
+fingerprint.fp_latitude = 32.1F;
+fingerprint.fp_longitude = 98.7F;
+string insert_json = JsonConvert.SerializeObject(fingerprint);
+request.AddParameter("application/json", insert_json, ParameterType.RequestBody);
+
+IRestResponse response = client.Execute(request);
+Fingerprint fp_response = new Fingerprint();
+var db_text = "";
+if (response.IsSuccessful)
+{
+	string json_text = response.Content;
+fp_response = JsonConvert.DeserializeObject<Fingerprint>(json_text);
+	db_text += fp_response.fp_id + " " + fp_response.fp_latitude + " " + fp_response.fp_longitude + "\n";
+}
+else
+{
+	db_text += response.StatusDescription + " " + response.ErrorMessage;
+	Console.WriteLine(response.ErrorException);
+}
+
+//insert ap-rssi-pair to fingerprint's child collection
+var request2 = new RestRequest(Method.POST);
+request2.Resource = "fingerprint-test/" + fp_response._id + "/ap_rssi";
+request2.AddHeader("cache-control", "no-cache");
+request2.AddHeader("x-apikey", "7118ad356550e03d458063ea0001e3009b7fc");
+request2.AddHeader("content-type", "application/json");
+
+ApRssiPair apRssiPair = new ApRssiPair();
+apRssiPair.rssi = -10;
+apRssiPair.ap_mac_addr = "aa:bb:cc:dd:ee:ff";
+string insert_json2 = JsonConvert.SerializeObject(apRssiPair);
+request2.AddParameter("application/json", insert_json2, ParameterType.RequestBody);
+
+IRestResponse response2 = client.Execute(request2);
+ApRssiPair arp_response = new ApRssiPair();
+if (response2.IsSuccessful)
+{
+	string json_text = response2.Content;
+arp_response = JsonConvert.DeserializeObject<ApRssiPair>(json_text);
+	db_text += arp_response.ap_rssi_id + " " + arp_response.rssi + " " + arp_response.ap_mac_addr + "\n";
+}
+else
+{
+	db_text += response2.StatusDescription + " " + response2.ErrorMessage;
+	Console.WriteLine(response2.ErrorException);
+}

@@ -17,6 +17,7 @@ using Android.Views;
 using Android.Widget;
 using Plugin.Geolocator;
 using RestSharp;
+using Newtonsoft.Json;
 
 namespace Capstone
 {
@@ -24,12 +25,13 @@ namespace Capstone
     public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener
     {
         //Change this to your own network ID name or in the schools case "tamulink-wpa"
-        const string networkSSID = "\"" + "OtterlyAdorable" + "\"";
+        const string networkSSID = "\"" + "tamulink-wpa" + "\"";
        
         TextView wifiText;
         Button wifiButton;
         WifiManager wifiManager;
         public IList<ScanResult> scanResults;
+        RestClient client;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -37,15 +39,9 @@ namespace Capstone
             //Creates main page layout by referencing activity_main.axml
             SetContentView(Resource.Layout.activity_main);
 
-            //Query the database and pull all records from the first collection
-            var client = new RestClient("https://testdb-05fa.restdb.io/rest/first");
-            var request = new RestRequest(Method.GET);
-            request.AddHeader("cache-control", "no-cache");
-            request.AddHeader("x-apikey", "7118ad356550e03d458063ea0001e3009b7fc");
-            request.AddHeader("content-type", "application/json");
-            IRestResponse response = client.Execute(request);
-            Console.WriteLine("Database pull complete");
-            Console.WriteLine(response.Content);
+            //Set up database connection
+            var baseUrl = "https://testdb-05fa.restdb.io/rest/";
+            client = new RestClient(baseUrl);
 
             var locator = CrossGeolocator.Current;
             locator.DesiredAccuracy = 10;
@@ -152,6 +148,37 @@ namespace Capstone
             WifiInfo wifiInfo = wifiManager.ConnectionInfo;
             wifiText.Text = wifiInfo.SSID + "";
             wifiText.Append("\nLat: " + position.Latitude + "\nLong: " + position.Longitude);
+
+            //insert new fingerprint to database
+            var request = new RestRequest(Method.POST);
+            request.Resource = "fingerprint-test";
+            request.AddHeader("cache-control", "no-cache");
+            request.AddHeader("x-apikey", "7118ad356550e03d458063ea0001e3009b7fc");
+            request.AddHeader("content-type", "application/json");
+
+            Fingerprint fingerprint = new Fingerprint();
+            fingerprint.fp_latitude = position.Latitude;
+            fingerprint.fp_longitude = position.Longitude;
+            string insert_json = JsonConvert.SerializeObject(fingerprint);
+            request.AddParameter("application/json", insert_json, ParameterType.RequestBody);
+
+            IRestResponse response = client.Execute(request);
+            Fingerprint fp_response = new Fingerprint();
+            //var db_text = "";
+            if (response.IsSuccessful)
+            {
+                string json_text = response.Content;
+                fp_response = JsonConvert.DeserializeObject<Fingerprint>(json_text);
+                //db_text += fp_response.fp_id + " " + fp_response.fp_latitude + " " + fp_response.fp_longitude + "\n";
+            }
+            else
+            {
+                //db_text += response.StatusDescription + " " + response.ErrorMessage;
+                Console.WriteLine(response.StatusDescription);
+                Console.WriteLine(response.ErrorMessage);
+                Console.WriteLine(response.ErrorException);
+            }
+
             //Call the AP scan function
             wifiManager.StartScan();
             scanResults = wifiManager.ScanResults;
@@ -159,6 +186,34 @@ namespace Capstone
             {
                 ScanResult AccessPoint = scanResults[i];
                 wifiText.Append("\n AP SSID: " + AccessPoint.Bssid + "\n RSSI: " + AccessPoint.Level);
+                //insert ap-rssi-pair to fingerprint's child collection
+                var request2 = new RestRequest(Method.POST);
+                request2.Resource = "fingerprint-test/" + fp_response._id + "/ap_rssi";
+                request2.AddHeader("cache-control", "no-cache");
+                request2.AddHeader("x-apikey", "7118ad356550e03d458063ea0001e3009b7fc");
+                request2.AddHeader("content-type", "application/json");
+
+                ApRssiPair apRssiPair = new ApRssiPair();
+                apRssiPair.rssi = AccessPoint.Level;
+                apRssiPair.ap_mac_addr = AccessPoint.Bssid;
+                string insert_json2 = JsonConvert.SerializeObject(apRssiPair);
+                request2.AddParameter("application/json", insert_json2, ParameterType.RequestBody);
+
+                IRestResponse response2 = client.Execute(request2);
+                ApRssiPair arp_response = new ApRssiPair();
+                if (response2.IsSuccessful)
+                {
+                    string json_text = response2.Content;
+                    arp_response = JsonConvert.DeserializeObject<ApRssiPair>(json_text);
+                    //db_text += arp_response.ap_rssi_id + " " + arp_response.rssi + " " + arp_response.ap_mac_addr + "\n";
+                }
+                else
+                {
+                    //db_text += response2.StatusDescription + " " + response2.ErrorMessage;
+                    Console.WriteLine(response2.StatusDescription);
+                    Console.WriteLine(response2.ErrorMessage);
+                    Console.WriteLine(response2.ErrorException);
+                }
             }
         }
         //What happens when someone presses the back button?
