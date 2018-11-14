@@ -34,6 +34,8 @@ namespace Capstone
         public IList<ScanResult> scanResults;
         RestClient client;
 
+        bool polling = false;
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -90,12 +92,9 @@ namespace Capstone
             Android.Support.V7.Widget.Toolbar toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.toolbar);
             SetSupportActionBar(toolbar);
 
-            //Displays the mail button
-            FloatingActionButton fab = FindViewById<FloatingActionButton>(Resource.Id.fab);
-            fab.Click += FabOnClick;
-
             //Creates the three horizontal bar on top left which brings up Navigation View on toggle
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
+
             //Opens and closes navigation tab on click
             ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, Resource.String.navigation_drawer_open, Resource.String.navigation_drawer_close);
             drawer.AddDrawerListener(toggle);
@@ -109,7 +108,13 @@ namespace Capstone
         //Function to poll WiFi RSSID information, and display it
         private void pollWiFi(object sender, ElapsedEventArgs e)
         {
-            RunOnUiThread(async () => { await findPosition(sender, e); });
+            if (!polling)
+            {
+                if (!polling)
+                {
+                    findPosition(sender, e);
+                }
+            }
         }
 
         static int partition(IList<ScanResult> arr, int low, int high)
@@ -159,16 +164,18 @@ namespace Capstone
         //Function to find current GPS coordinates for footprinting use
         async Task findPosition(object sender, EventArgs e)
         {
-           
+            polling = true;
             var locator = CrossGeolocator.Current;
-           //How accurate to the meter. IE 500 would result in coordinates being 500 meters within your vicinity
+            //How accurate to the meter. IE 500 would result in coordinates being 500 meters within your vicinity
             locator.DesiredAccuracy = 1;
             //Get Position
             var position = await locator.GetPositionAsync(TimeSpan.FromMilliseconds(500));
             //Edit the Text to include Lat/Long
             WifiInfo wifiInfo = wifiManager.ConnectionInfo;
-            wifiText.Text = wifiInfo.SSID + "";
-            wifiText.Append("\nLat: " + position.Latitude + "\nLong: " + position.Longitude);
+            RunOnUiThread(() => {
+                wifiText.Text = wifiInfo.SSID + "";
+                wifiText.Append("\nLat: " + position.Latitude + "\nLong: " + position.Longitude);
+            });
 
             //insert new fingerprint to database
             var request = new RestRequest(Method.POST);
@@ -205,7 +212,7 @@ namespace Capstone
             for (int i = 0; i < 10; i++)
             {
                 ScanResult AccessPoint = scanResults[i];
-                wifiText.Append("\n AP SSID: " + AccessPoint.Bssid + "\n RSSI: " + AccessPoint.Level);
+                RunOnUiThread(() => { wifiText.Append("\n AP SSID: " + AccessPoint.Bssid + "\n RSSI: " + AccessPoint.Level); });
                 //insert ap-rssi-pair to fingerprint's child collection
                 var request2 = new RestRequest(Method.POST);
                 request2.Resource = "fingerprint-test/" + fp_response._id + "/ap_rssi";
@@ -232,6 +239,7 @@ namespace Capstone
                     Console.WriteLine(response2.ErrorMessage);
                     Console.WriteLine(response2.ErrorException);
                 }
+                polling = false;
             }
         }
         
@@ -250,13 +258,6 @@ namespace Capstone
             }
         }
 
-        //Create a three dot upper tab to go to settings on the upper right of the main page
-        public override bool OnCreateOptionsMenu(IMenu menu)
-        {
-            MenuInflater.Inflate(Resource.Menu.menu_main, menu);
-            return true;
-        }
-
         //Unsure of direct purpose
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
@@ -269,14 +270,6 @@ namespace Capstone
             return base.OnOptionsItemSelected(item);
         }
 
-        //This is the mail button's function call
-        private void FabOnClick(object sender, EventArgs eventArgs)
-        {
-            View view = (View)sender;
-            //Causes a small bar to appear on the bottom that calls either a function or in this case a "replace" statement
-            Snackbar.Make(view, "Replace with your own action", Snackbar.LengthLong)
-                .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();
-        }
         //This is the side bar's function calls
         public bool OnNavigationItemSelected(IMenuItem item)
         {
@@ -304,14 +297,6 @@ namespace Capstone
                
             }
             else if (id == Resource.Id.nav_set)
-            {
-
-            }
-            else if (id == Resource.Id.nav_share)
-            {
-
-            }
-            else if (id == Resource.Id.nav_send)
             {
 
             }
