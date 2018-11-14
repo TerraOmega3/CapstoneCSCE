@@ -35,6 +35,7 @@ namespace Capstone
         RestClient client;
 
         bool polling = false;
+        bool keepPolling = false;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -80,6 +81,8 @@ namespace Capstone
             }
 
             //Connect to the main_text on Content_main layer
+            //Want to set this to local_text so that it shows up on localization view instead
+            //Crashes when set to that for some reason, idk why
             wifiText = (TextView)FindViewById(Resource.Id.main_text);
 
             //Calls the polling function every 4 seconds
@@ -110,7 +113,7 @@ namespace Capstone
         {
             if (!polling)
             {
-                if (!polling)
+                if (!polling && keepPolling)
                 {
                     findPosition(sender, e);
                 }
@@ -278,6 +281,7 @@ namespace Capstone
             //Creates logo and id name by referencing the file activity_main_drawer.xml which lists each one
             if (id == Resource.Id.nav_map)
             {
+                keepPolling = false;
                 // Handles the map functions
                 Android.Widget.RelativeLayout mainLayout = (Android.Widget.RelativeLayout)FindViewById(Resource.Id.all_container);
                 Android.Widget.RelativeLayout parentLayout = (Android.Widget.RelativeLayout)FindViewById(Resource.Layout.app_bar_main);
@@ -289,16 +293,18 @@ namespace Capstone
             }
             else if (id == Resource.Id.nav_loc)
             {
+                keepPolling = true;
                 Android.Widget.RelativeLayout mainLayout = (Android.Widget.RelativeLayout)FindViewById(Resource.Id.all_container);
+                Android.Widget.RelativeLayout parentLayout = (Android.Widget.RelativeLayout)FindViewById(Resource.Layout.app_bar_local);
                 LayoutInflater inflater = (LayoutInflater)GetSystemService(Context.LayoutInflaterService);
-                View layout = inflater.Inflate(Resource.Layout.content_local, null);
+                View layout = inflater.Inflate(Resource.Layout.content_local, parentLayout);
                 mainLayout.RemoveAllViews();
                 mainLayout.AddView(layout);
                
             }
             else if (id == Resource.Id.nav_set)
             {
-
+                keepPolling = false;
             }
 
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
