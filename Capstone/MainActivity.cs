@@ -4,6 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Android.App;
+using Android.Gms.Maps;
+using Android.Gms.Maps.Model;
 using Android.Content;
 using Android.Locations;
 using Android.Net;
@@ -23,6 +25,15 @@ using Newtonsoft.Json;
 namespace Capstone
 {
     [Activity(Label = "EyeFi", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
+
+    public class MapHandler : Android.Support.V4.App.FragmentActivity, IOnMapReadyCallback
+    {
+        public void OnMapReady(GoogleMap map)
+        {
+            map.AddMarker(new MarkerOptions().SetPosition(new LatLng(0, 0)).SetTitle("Marker"));
+        }
+    }
+
     public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener
     {
         //Change this to your own network ID name or in the schools case "tamulink-wpa"
@@ -33,6 +44,7 @@ namespace Capstone
         public int compare;
         public IList<ScanResult> scanResults;
         RestClient client;
+        MapHandler map_handler = new MapHandler();
 
         bool polling = false;
         bool keepPolling = true;
@@ -43,6 +55,10 @@ namespace Capstone
             base.OnCreate(savedInstanceState);
             //Creates main page layout by referencing activity_main.axml
             SetContentView(Resource.Layout.activity_main);
+
+            //Create map
+            var mapFrag = ((SupportMapFragment)SupportFragmentManager.FindFragmentById(Resource.Id.map));
+            mapFrag.GetMapAsync(map_handler);
 
             //Set up database connection
             var baseUrl = "https://testdb-05fa.restdb.io/rest/";

@@ -2838,7 +2838,7 @@ namespace Capstone
 			public const int list_item = 2131427435;
 			
 			// aapt resource value: 0x7f0b0099
-			public const int map_text = 2131427481;
+			public const int map = 2131427481;
 			
 			// aapt resource value: 0x7f0b00c1
 			public const int masked = 2131427521;
