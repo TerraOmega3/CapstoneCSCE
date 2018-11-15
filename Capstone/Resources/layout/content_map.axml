@@ -9,10 +9,10 @@
 	tools:showIn="@layout/app_bar_main">
 
 	<TextView
-		android:id="@+id/main_text"
+		android:id="@+id/map_text"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_centerInParent="true"
-		android:text="Welcome to EyeFi!" />
+		android:text="Map page" />
 
 </RelativeLayout>
