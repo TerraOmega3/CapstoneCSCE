@@ -2564,8 +2564,8 @@ namespace Capstone
 			// aapt resource value: 0x7f0b0042
 			public const int SYM = 2131427394;
 			
-			// aapt resource value: 0x7f0b00ad
-			public const int action0 = 2131427501;
+			// aapt resource value: 0x7f0b00ae
+			public const int action0 = 2131427502;
 			
 			// aapt resource value: 0x7f0b0086
 			public const int action_bar = 2131427462;
@@ -2588,17 +2588,17 @@ namespace Capstone
 			// aapt resource value: 0x7f0b0064
 			public const int action_bar_title = 2131427428;
 			
-			// aapt resource value: 0x7f0b00aa
-			public const int action_container = 2131427498;
+			// aapt resource value: 0x7f0b00ab
+			public const int action_container = 2131427499;
 			
 			// aapt resource value: 0x7f0b0087
 			public const int action_context_bar = 2131427463;
 			
-			// aapt resource value: 0x7f0b00b1
-			public const int action_divider = 2131427505;
+			// aapt resource value: 0x7f0b00b2
+			public const int action_divider = 2131427506;
 			
-			// aapt resource value: 0x7f0b00ab
-			public const int action_image = 2131427499;
+			// aapt resource value: 0x7f0b00ac
+			public const int action_image = 2131427500;
 			
 			// aapt resource value: 0x7f0b0003
 			public const int action_menu_divider = 2131427331;
@@ -2615,14 +2615,14 @@ namespace Capstone
 			// aapt resource value: 0x7f0b0066
 			public const int action_mode_close_button = 2131427430;
 			
-			// aapt resource value: 0x7f0b00c3
-			public const int action_settings = 2131427523;
+			// aapt resource value: 0x7f0b00c4
+			public const int action_settings = 2131427524;
 			
-			// aapt resource value: 0x7f0b00ac
-			public const int action_text = 2131427500;
+			// aapt resource value: 0x7f0b00ad
+			public const int action_text = 2131427501;
 			
-			// aapt resource value: 0x7f0b00ba
-			public const int actions = 2131427514;
+			// aapt resource value: 0x7f0b00bb
+			public const int actions = 2131427515;
 			
 			// aapt resource value: 0x7f0b0067
 			public const int activity_chooser_view_content = 2131427431;
@@ -2666,8 +2666,8 @@ namespace Capstone
 			// aapt resource value: 0x7f0b006d
 			public const int buttonPanel = 2131427437;
 			
-			// aapt resource value: 0x7f0b00ae
-			public const int cancel_action = 2131427502;
+			// aapt resource value: 0x7f0b00af
+			public const int cancel_action = 2131427503;
 			
 			// aapt resource value: 0x7f0b004f
 			public const int center = 2131427407;
@@ -2681,8 +2681,8 @@ namespace Capstone
 			// aapt resource value: 0x7f0b007d
 			public const int checkbox = 2131427453;
 			
-			// aapt resource value: 0x7f0b00b6
-			public const int chronometer = 2131427510;
+			// aapt resource value: 0x7f0b00b7
+			public const int chronometer = 2131427511;
 			
 			// aapt resource value: 0x7f0b0058
 			public const int clip_horizontal = 2131427416;
@@ -2693,14 +2693,14 @@ namespace Capstone
 			// aapt resource value: 0x7f0b0044
 			public const int collapseActionView = 2131427396;
 			
-			// aapt resource value: 0x7f0b009c
-			public const int container = 2131427484;
+			// aapt resource value: 0x7f0b009d
+			public const int container = 2131427485;
 			
 			// aapt resource value: 0x7f0b0070
 			public const int contentPanel = 2131427440;
 			
-			// aapt resource value: 0x7f0b009d
-			public const int coordinator = 2131427485;
+			// aapt resource value: 0x7f0b009e
+			public const int coordinator = 2131427486;
 			
 			// aapt resource value: 0x7f0b0077
 			public const int custom = 2131427447;
@@ -2717,20 +2717,20 @@ namespace Capstone
 			// aapt resource value: 0x7f0b006a
 			public const int default_activity_button = 2131427434;
 			
-			// aapt resource value: 0x7f0b009f
-			public const int design_bottom_sheet = 2131427487;
+			// aapt resource value: 0x7f0b00a0
+			public const int design_bottom_sheet = 2131427488;
+			
+			// aapt resource value: 0x7f0b00a7
+			public const int design_menu_item_action_area = 2131427495;
 			
 			// aapt resource value: 0x7f0b00a6
-			public const int design_menu_item_action_area = 2131427494;
+			public const int design_menu_item_action_area_stub = 2131427494;
 			
 			// aapt resource value: 0x7f0b00a5
-			public const int design_menu_item_action_area_stub = 2131427493;
+			public const int design_menu_item_text = 2131427493;
 			
 			// aapt resource value: 0x7f0b00a4
-			public const int design_menu_item_text = 2131427492;
-			
-			// aapt resource value: 0x7f0b00a3
-			public const int design_navigation_view = 2131427491;
+			public const int design_navigation_view = 2131427492;
 			
 			// aapt resource value: 0x7f0b002c
 			public const int disableHome = 2131427372;
@@ -2744,8 +2744,8 @@ namespace Capstone
 			// aapt resource value: 0x7f0b003b
 			public const int end = 2131427387;
 			
-			// aapt resource value: 0x7f0b00bc
-			public const int end_padder = 2131427516;
+			// aapt resource value: 0x7f0b00bd
+			public const int end_padder = 2131427517;
 			
 			// aapt resource value: 0x7f0b004a
 			public const int enterAlways = 2131427402;
@@ -2792,8 +2792,8 @@ namespace Capstone
 			// aapt resource value: 0x7f0b006c
 			public const int icon = 2131427436;
 			
-			// aapt resource value: 0x7f0b00bb
-			public const int icon_group = 2131427515;
+			// aapt resource value: 0x7f0b00bc
+			public const int icon_group = 2131427516;
 			
 			// aapt resource value: 0x7f0b0024
 			public const int icon_only = 2131427364;
@@ -2804,11 +2804,11 @@ namespace Capstone
 			// aapt resource value: 0x7f0b0069
 			public const int image = 2131427433;
 			
-			// aapt resource value: 0x7f0b00a8
-			public const int imageView = 2131427496;
+			// aapt resource value: 0x7f0b00a9
+			public const int imageView = 2131427497;
 			
-			// aapt resource value: 0x7f0b00b7
-			public const int info = 2131427511;
+			// aapt resource value: 0x7f0b00b8
+			public const int info = 2131427512;
 			
 			// aapt resource value: 0x7f0b0063
 			public const int italic = 2131427427;
@@ -2816,8 +2816,8 @@ namespace Capstone
 			// aapt resource value: 0x7f0b0000
 			public const int item_touch_helper_previous_elevation = 2131427328;
 			
-			// aapt resource value: 0x7f0b009b
-			public const int largeLabel = 2131427483;
+			// aapt resource value: 0x7f0b009c
+			public const int largeLabel = 2131427484;
 			
 			// aapt resource value: 0x7f0b0053
 			public const int left = 2131427411;
@@ -2837,17 +2837,20 @@ namespace Capstone
 			// aapt resource value: 0x7f0b006b
 			public const int list_item = 2131427435;
 			
+			// aapt resource value: 0x7f0b009a
+			public const int locSwitch = 2131427482;
+			
 			// aapt resource value: 0x7f0b0099
 			public const int main_text = 2131427481;
 			
-			// aapt resource value: 0x7f0b00bf
-			public const int masked = 2131427519;
+			// aapt resource value: 0x7f0b00c0
+			public const int masked = 2131427520;
 			
-			// aapt resource value: 0x7f0b00b0
-			public const int media_actions = 2131427504;
+			// aapt resource value: 0x7f0b00b1
+			public const int media_actions = 2131427505;
 			
-			// aapt resource value: 0x7f0b00bd
-			public const int message = 2131427517;
+			// aapt resource value: 0x7f0b00be
+			public const int message = 2131427518;
 			
 			// aapt resource value: 0x7f0b003c
 			public const int middle = 2131427388;
@@ -2858,20 +2861,20 @@ namespace Capstone
 			// aapt resource value: 0x7f0b0033
 			public const int multiply = 2131427379;
 			
-			// aapt resource value: 0x7f0b00c1
-			public const int nav_loc = 2131427521;
-			
-			// aapt resource value: 0x7f0b00c0
-			public const int nav_map = 2131427520;
-			
 			// aapt resource value: 0x7f0b00c2
-			public const int nav_set = 2131427522;
+			public const int nav_loc = 2131427522;
+			
+			// aapt resource value: 0x7f0b00c1
+			public const int nav_map = 2131427521;
+			
+			// aapt resource value: 0x7f0b00c3
+			public const int nav_set = 2131427523;
 			
 			// aapt resource value: 0x7f0b0096
 			public const int nav_view = 2131427478;
 			
-			// aapt resource value: 0x7f0b00a2
-			public const int navigation_header_container = 2131427490;
+			// aapt resource value: 0x7f0b00a3
+			public const int navigation_header_container = 2131427491;
 			
 			// aapt resource value: 0x7f0b0046
 			public const int never = 2131427398;
@@ -2882,14 +2885,14 @@ namespace Capstone
 			// aapt resource value: 0x7f0b001f
 			public const int normal = 2131427359;
 			
-			// aapt resource value: 0x7f0b00b9
-			public const int notification_background = 2131427513;
+			// aapt resource value: 0x7f0b00ba
+			public const int notification_background = 2131427514;
+			
+			// aapt resource value: 0x7f0b00b4
+			public const int notification_main_column = 2131427508;
 			
 			// aapt resource value: 0x7f0b00b3
-			public const int notification_main_column = 2131427507;
-			
-			// aapt resource value: 0x7f0b00b2
-			public const int notification_main_column_container = 2131427506;
+			public const int notification_main_column_container = 2131427507;
 			
 			// aapt resource value: 0x7f0b0056
 			public const int parallax = 2131427414;
@@ -2915,11 +2918,11 @@ namespace Capstone
 			// aapt resource value: 0x7f0b0054
 			public const int right = 2131427412;
 			
-			// aapt resource value: 0x7f0b00b8
-			public const int right_icon = 2131427512;
+			// aapt resource value: 0x7f0b00b9
+			public const int right_icon = 2131427513;
 			
-			// aapt resource value: 0x7f0b00b4
-			public const int right_side = 2131427508;
+			// aapt resource value: 0x7f0b00b5
+			public const int right_side = 2131427509;
 			
 			// aapt resource value: 0x7f0b0020
 			public const int satellite = 2131427360;
@@ -2996,14 +2999,14 @@ namespace Capstone
 			// aapt resource value: 0x7f0b0030
 			public const int showTitle = 2131427376;
 			
-			// aapt resource value: 0x7f0b009a
-			public const int smallLabel = 2131427482;
+			// aapt resource value: 0x7f0b009b
+			public const int smallLabel = 2131427483;
+			
+			// aapt resource value: 0x7f0b00a2
+			public const int snackbar_action = 2131427490;
 			
 			// aapt resource value: 0x7f0b00a1
-			public const int snackbar_action = 2131427489;
-			
-			// aapt resource value: 0x7f0b00a0
-			public const int snackbar_text = 2131427488;
+			public const int snackbar_text = 2131427489;
 			
 			// aapt resource value: 0x7f0b004e
 			public const int snap = 2131427406;
@@ -3029,8 +3032,8 @@ namespace Capstone
 			// aapt resource value: 0x7f0b0055
 			public const int start = 2131427413;
 			
-			// aapt resource value: 0x7f0b00af
-			public const int status_bar_latest_event_content = 2131427503;
+			// aapt resource value: 0x7f0b00b0
+			public const int status_bar_latest_event_content = 2131427504;
 			
 			// aapt resource value: 0x7f0b0080
 			public const int submenuarrow = 2131427456;
@@ -3059,11 +3062,11 @@ namespace Capstone
 			// aapt resource value: 0x7f0b0073
 			public const int textSpacerNoTitle = 2131427443;
 			
-			// aapt resource value: 0x7f0b00a9
-			public const int textView = 2131427497;
+			// aapt resource value: 0x7f0b00aa
+			public const int textView = 2131427498;
 			
-			// aapt resource value: 0x7f0b00a7
-			public const int text_input_password_toggle = 2131427495;
+			// aapt resource value: 0x7f0b00a8
+			public const int text_input_password_toggle = 2131427496;
 			
 			// aapt resource value: 0x7f0b0014
 			public const int textinput_counter = 2131427348;
@@ -3071,8 +3074,8 @@ namespace Capstone
 			// aapt resource value: 0x7f0b0015
 			public const int textinput_error = 2131427349;
 			
-			// aapt resource value: 0x7f0b00b5
-			public const int time = 2131427509;
+			// aapt resource value: 0x7f0b00b6
+			public const int time = 2131427510;
 			
 			// aapt resource value: 0x7f0b001c
 			public const int title = 2131427356;
@@ -3092,8 +3095,8 @@ namespace Capstone
 			// aapt resource value: 0x7f0b0078
 			public const int topPanel = 2131427448;
 			
-			// aapt resource value: 0x7f0b009e
-			public const int touch_outside = 2131427486;
+			// aapt resource value: 0x7f0b009f
+			public const int touch_outside = 2131427487;
 			
 			// aapt resource value: 0x7f0b000f
 			public const int transition_current_scene = 2131427343;
@@ -3122,8 +3125,8 @@ namespace Capstone
 			// aapt resource value: 0x7f0b0016
 			public const int view_offset_helper = 2131427350;
 			
-			// aapt resource value: 0x7f0b00be
-			public const int visible = 2131427518;
+			// aapt resource value: 0x7f0b00bf
+			public const int visible = 2131427519;
 			
 			// aapt resource value: 0x7f0b0026
 			public const int wide = 2131427366;

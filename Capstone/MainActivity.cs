@@ -19,6 +19,8 @@ using Java.Util;
 using Plugin.Geolocator;
 using RestSharp;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Linq;
 
 namespace Capstone
 {
@@ -33,9 +35,10 @@ namespace Capstone
         public int compare;
         public IList<ScanResult> scanResults;
         RestClient client;
-
-        bool polling = false;
-
+        Button LocSwitch;
+        public bool polling = false;
+        //true means start as Local, false means start as footprint
+        bool locSW = false;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -84,9 +87,13 @@ namespace Capstone
 
             //Calls the polling function every 4 seconds
             System.Timers.Timer pollTimer = new System.Timers.Timer();
-            pollTimer.Interval = 4000; // in miliseconds
+            pollTimer.Interval = 3000; // in miliseconds
             pollTimer.Elapsed += pollWiFi;
             pollTimer.Start();
+
+            //Loc Switch Button will turn off FootPrint Function gathering and turn on Localization Gathering. And Vice Versa
+            LocSwitch = FindViewById<Button>(Resource.Id.locSwitch);
+            LocSwitch.Click += Switch;
 
             //Displays a three dot vertical button widget which displays a list of actions (in this case none at the moment)
             Android.Support.V7.Widget.Toolbar toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.toolbar);
@@ -110,13 +117,35 @@ namespace Capstone
         {
             if (!polling)
             {
-                if (!polling)
+                if (!polling && !locSW)
                 {
                     findPosition(sender, e);
+                    polling = false;
+                }
+                if (!polling && locSW)
+                {
+                    FindLocalization(sender, e);
+                    polling = false;
                 }
             }
         }
-
+        //Switches focus from gathering footprints to producing a coordinate
+        private void Switch(object sender, EventArgs e)
+        {
+            if (locSW)
+            {
+                LocSwitch = FindViewById<Button>(Resource.Id.locSwitch);
+                locSW = false;
+                LocSwitch.Text = "FP ON...LOC OFF";
+            }
+                
+            else
+            {
+                LocSwitch = FindViewById<Button>(Resource.Id.locSwitch);
+                locSW = true;
+                LocSwitch.Text = "FP OFF...LOC ON";
+            }
+        }
         static int partition(IList<ScanResult> arr, int low, int high)
         {
             ScanResult pivot = arr[high];
@@ -239,10 +268,12 @@ namespace Capstone
                     Console.WriteLine(response2.ErrorMessage);
                     Console.WriteLine(response2.ErrorException);
                 }
-                polling = false;
+                
             }
+            polling = false;
+
         }
-        
+
         //What happens when someone presses the back button?
         public override void OnBackPressed()
         {
@@ -258,6 +289,109 @@ namespace Capstone
             }
         }
 
+      
+        async Task FindLocalization(object sender, EventArgs e)
+        {
+            polling = true;
+            wifiManager.StartScan();
+            scanResults = wifiManager.ScanResults;
+            quickSort(scanResults, 0, scanResults.Count - 1);
+            //A list of Parent ID's
+            List<Parents> arpList = new List<Parents>();
+            //Find all the parents(Coordinates Footprints) associated with the AccessPoints we just scanned
+            for (int i = 0; i < 10; i++)
+            {
+                ScanResult AccessPoint = scanResults[i];
+                //RunOnUiThread(() => { wifiText.Append("\n AP SSID: " + AccessPoint.Bssid + "\n RSSI: " + AccessPoint.Level); });
+                var request = new RestRequest("ap-rssi-pair-test?q={\"ap_mac_addr\":\"" + AccessPoint.Bssid + "\"}", Method.GET);
+                request.AddHeader("cache-control", "no-cache");
+                request.RequestFormat = DataFormat.Json;
+                request.AddHeader("x-apikey", "7118ad356550e03d458063ea0001e3009b7fc");
+                request.AddHeader("content-type", "application/json");
+                request.AddParameter("metafields", true);
+                IRestResponse response = client.Execute(request);
+                Console.WriteLine(response.Content);
+                if (response.IsSuccessful)
+                {
+                    string json_text = response.Content;
+                    //JObject JResponse = (JObject)JsonConvert.DeserializeObject(json_text);
+                    if (arpList.Count == 0) arpList = (JsonConvert.DeserializeObject<List<Parents>>(json_text));
+                    else
+                    {
+                        List<Parents> arpList2 = (JsonConvert.DeserializeObject<List<Parents>>(json_text));
+                        arpList = arpList.Intersect(arpList2, new ParentsComp()).ToList();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine(response.StatusDescription);
+                    Console.WriteLine(response.ErrorMessage);
+                    Console.WriteLine(response.ErrorException);
+                }
+            }
+            //Scan through the parent list and get their information from the footprint database
+            List<Fingerprint> fpList = new List<Fingerprint>();
+            for (int j = 0; j < arpList.Count; j++)
+            {
+                var request = new RestRequest("fingerprint-test?q={\"_id\":\"" + arpList[j]._parent_id + "\"}&fetchchildren=true", Method.GET);
+                request.AddHeader("cache-control", "no-cache");
+                request.RequestFormat = DataFormat.Json;
+                request.AddHeader("x-apikey", "7118ad356550e03d458063ea0001e3009b7fc");
+                request.AddHeader("content-type", "application/json");
+                IRestResponse response = client.Execute(request);
+                Console.WriteLine(response.Content);
+                if (response.IsSuccessful)
+                {
+                    string json_text = response.Content;
+                    //JObject JResponse = (JObject)JsonConvert.DeserializeObject(json_text);
+                    if (fpList.Count == 0) fpList = (JsonConvert.DeserializeObject<List<Fingerprint>>(json_text));
+                    else
+                    {
+                        List<Fingerprint> fpList2 = (JsonConvert.DeserializeObject<List<Fingerprint>>(json_text));
+                        fpList.AddRange(fpList2);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine(response.StatusDescription);
+                    Console.WriteLine(response.ErrorMessage);
+                    Console.WriteLine(response.ErrorException);
+                }
+            }
+            //The Value with the least difference overall
+            int lowest = 99999999;
+            //The spot we will mark to remember as the lowest and most likely location
+            int place = 0;
+            //Now we compare the current AP scan list with each AP seen in the fpList
+            for (int k = 0; k < fpList.Count; k++)
+            {
+                int sum = 0;
+                for (int l = 0; l < fpList[k].ap_rssi.Count; l++)
+                {
+                    
+                    for(int m = 0; m < 10; m++)
+                    {
+                        if(scanResults[m].Bssid == fpList[k].ap_rssi[l].ap_mac_addr)
+                        {
+                            sum += Math.Abs(scanResults[m].Level - fpList[k].ap_rssi[l].rssi); 
+                        }
+                    }
+                }
+                //Check to see if we found a more likely location
+                if (sum < lowest)
+                {
+                    place = k;
+                    lowest = sum;
+                }
+            }
+            double lat = fpList[place].fp_latitude;
+            double lon = fpList[place].fp_longitude;
+
+            RunOnUiThread(() => { wifiText.Text = "\nLat: " + lat + "\nLong: " + lon; });
+
+            polling = false;
+                
+        }
         //Unsure of direct purpose
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
