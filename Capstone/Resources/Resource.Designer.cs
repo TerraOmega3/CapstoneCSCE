@@ -2842,17 +2842,12 @@ namespace Capstone
 			
 			// aapt resource value: 0x7f0b00c1
 			public const int masked = 2131427521;
-			// aapt resource value: 0x7f0b009a
-			public const int locSwitch = 2131427482;
 			
-			// aapt resource value: 0x7f0b00c0
-			public const int masked = 2131427520;
+			// aapt resource value: 0x7f0b00b2
+			public const int media_actions = 2131427506;
 			
-			// aapt resource value: 0x7f0b00b1
-			public const int media_actions = 2131427505;
-			
-			// aapt resource value: 0x7f0b00be
-			public const int message = 2131427518;
+			// aapt resource value: 0x7f0b00bf
+			public const int message = 2131427519;
 			
 			// aapt resource value: 0x7f0b003c
 			public const int middle = 2131427388;
@@ -2872,17 +2867,11 @@ namespace Capstone
 			// aapt resource value: 0x7f0b00c4
 			public const int nav_set = 2131427524;
 			
-			// aapt resource value: 0x7f0b00c4
-			public const int nav_set = 2131427524;
-			
 			// aapt resource value: 0x7f0b0096
 			public const int nav_view = 2131427478;
 			
 			// aapt resource value: 0x7f0b00a4
 			public const int navigation_header_container = 2131427492;
-			
-			// aapt resource value: 0x7f0b009a
-			public const int navigation_text = 2131427482;
 			
 			// aapt resource value: 0x7f0b009a
 			public const int navigation_text = 2131427482;

@@ -35,9 +35,10 @@ namespace Capstone
         public int compare;
         public IList<ScanResult> scanResults;
         RestClient client;
-
+        Button LocSwitch;
         bool polling = false;
-        bool keepPolling = true;
+        //Start as false for Footprint, True for Localizing
+        bool PollSwitch = false;
         bool displayNavData = false;
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -85,13 +86,9 @@ namespace Capstone
 
             //Calls the polling function every 4 seconds
             System.Timers.Timer pollTimer = new System.Timers.Timer();
-            pollTimer.Interval = 3000; // in miliseconds
+            pollTimer.Interval = 4000; // in miliseconds
             pollTimer.Elapsed += pollWiFi;
             pollTimer.Start();
-
-            //Loc Switch Button will turn off FootPrint Function gathering and turn on Localization Gathering. And Vice Versa
-            LocSwitch = FindViewById<Button>(Resource.Id.locSwitch);
-            LocSwitch.Click += Switch;
 
             //Displays a three dot vertical button widget which displays a list of actions (in this case none at the moment)
             Android.Support.V7.Widget.Toolbar toolbar = FindViewById<Android.Support.V7.Widget.Toolbar>(Resource.Id.toolbar);
@@ -115,33 +112,16 @@ namespace Capstone
         {
             if (!polling)
             {
-                if (!polling && !locSW)
+                if (!polling && !PollSwitch)
                 {
                     findPosition(sender, e);
                     polling = false;
                 }
-                if (!polling && locSW)
+                if (!polling && PollSwitch)
                 {
                     FindLocalization(sender, e);
                     polling = false;
                 }
-            }
-        }
-        //Switches focus from gathering footprints to producing a coordinate
-        private void Switch(object sender, EventArgs e)
-        {
-            if (locSW)
-            {
-                LocSwitch = FindViewById<Button>(Resource.Id.locSwitch);
-                locSW = false;
-                LocSwitch.Text = "FP ON...LOC OFF";
-            }
-                
-            else
-            {
-                LocSwitch = FindViewById<Button>(Resource.Id.locSwitch);
-                locSW = true;
-                LocSwitch.Text = "FP OFF...LOC ON";
             }
         }
         static int partition(IList<ScanResult> arr, int low, int high)
@@ -397,9 +377,14 @@ namespace Capstone
             }
             double lat = fpList[place].fp_latitude;
             double lon = fpList[place].fp_longitude;
-
-            RunOnUiThread(() => { wifiText.Text = "\nLat: " + lat + "\nLong: " + lon; });
-
+            if (displayNavData)
+            {
+                wifiText = (TextView)FindViewById(Resource.Id.navigation_text);
+            }
+            if (displayNavData && wifiText != null)
+            {
+                RunOnUiThread(() => { wifiText.Text = "\nLat: " + lat + "\nLong: " + lon; });
+            }
             polling = false;
                 
         }
@@ -419,17 +404,17 @@ namespace Capstone
         [Java.Interop.Export("toggle_polling")]
         public void toggle_polling(View b)
         {
-            keepPolling = !keepPolling;
+            PollSwitch = !PollSwitch;
 
             Button button = (Button)b;
 
-            if (keepPolling)
+            if (PollSwitch)
             {
-                button.Text = "Poll WiFi is on";
+                button.Text = "Localize is Active.";
             }
             else
             {
-                button.Text = "Poll WiFi is off";
+                button.Text = "Footprint is Active.";
             }
         }
 
