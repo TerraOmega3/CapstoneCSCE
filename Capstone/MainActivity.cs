@@ -37,7 +37,8 @@ namespace Capstone
         RestClient client;
 
         bool polling = false;
-        bool keepPolling = false;
+        bool keepPolling = true;
+        bool displayNavData = false;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
