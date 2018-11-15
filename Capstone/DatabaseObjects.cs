@@ -31,4 +31,20 @@ namespace Capstone
         public double fp_longitude { get; set; }
         public List<ApRssiPair> ap_rssi { get; set; }
     }
+    public class Parents
+    {
+        public string _parent_id { get; set; }
+    }
+    public class ParentsComp : EqualityComparer<Parents>
+    {
+        public override bool Equals(Parents x, Parents y)
+        {
+            return string.Equals(x._parent_id, y._parent_id);
+        }
+
+        public override int GetHashCode(Parents obj)
+        {
+            return obj._parent_id.GetHashCode();
+        }
+    }
 }
