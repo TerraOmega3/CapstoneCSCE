@@ -35,10 +35,10 @@ namespace Capstone
         public int compare;
         public IList<ScanResult> scanResults;
         RestClient client;
-        Button LocSwitch;
-        public bool polling = false;
-        //true means start as Local, false means start as footprint
-        bool locSW = false;
+
+        bool polling = false;
+        bool keepPolling = false;
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -81,9 +81,6 @@ namespace Capstone
                     break;
                 }
             }
-
-            //Connect to the main_text on Content_main layer
-            wifiText = (TextView)FindViewById(Resource.Id.main_text);
 
             //Calls the polling function every 4 seconds
             System.Timers.Timer pollTimer = new System.Timers.Timer();
@@ -194,6 +191,12 @@ namespace Capstone
         async Task findPosition(object sender, EventArgs e)
         {
             polling = true;
+            //Connect to the navigation_text on content_navigation
+            if (displayNavData)
+            {
+                wifiText = (TextView)FindViewById(Resource.Id.navigation_text);
+            }
+
             var locator = CrossGeolocator.Current;
             //How accurate to the meter. IE 500 would result in coordinates being 500 meters within your vicinity
             locator.DesiredAccuracy = 1;
@@ -201,10 +204,14 @@ namespace Capstone
             var position = await locator.GetPositionAsync(TimeSpan.FromMilliseconds(500));
             //Edit the Text to include Lat/Long
             WifiInfo wifiInfo = wifiManager.ConnectionInfo;
-            RunOnUiThread(() => {
-                wifiText.Text = wifiInfo.SSID + "";
-                wifiText.Append("\nLat: " + position.Latitude + "\nLong: " + position.Longitude);
-            });
+            if (displayNavData && wifiText != null)
+            {
+                RunOnUiThread(() =>
+                {
+                    wifiText.Text = wifiInfo.SSID + "";
+                    wifiText.Append("\nLat: " + position.Latitude + "\nLong: " + position.Longitude);
+                });
+            }
 
             //insert new fingerprint to database
             var request = new RestRequest(Method.POST);
@@ -241,7 +248,10 @@ namespace Capstone
             for (int i = 0; i < 10; i++)
             {
                 ScanResult AccessPoint = scanResults[i];
-                RunOnUiThread(() => { wifiText.Append("\n AP SSID: " + AccessPoint.Bssid + "\n RSSI: " + AccessPoint.Level); });
+                if (displayNavData && wifiText != null)
+                {
+                    RunOnUiThread(() => { wifiText.Append("\n AP SSID: " + AccessPoint.Bssid + "\n RSSI: " + AccessPoint.Level); });
+                }
                 //insert ap-rssi-pair to fingerprint's child collection
                 var request2 = new RestRequest(Method.POST);
                 request2.Resource = "fingerprint-test/" + fp_response._id + "/ap_rssi";
@@ -404,36 +414,54 @@ namespace Capstone
             return base.OnOptionsItemSelected(item);
         }
 
+        //Toggle polling of wifi on button click in settings
+        [Java.Interop.Export("toggle_polling")]
+        public void toggle_polling(View b)
+        {
+            keepPolling = !keepPolling;
+
+            Button button = (Button)b;
+
+            if (keepPolling)
+            {
+                button.Text = "Poll WiFi is on";
+            }
+            else
+            {
+                button.Text = "Poll WiFi is off";
+            }
+        }
+
         //This is the side bar's function calls
         public bool OnNavigationItemSelected(IMenuItem item)
         {
             int id = item.ItemId;
 
+            //Common code for all of the conditions below
+            Android.Widget.RelativeLayout mainLayout = (Android.Widget.RelativeLayout)FindViewById(Resource.Id.all_container);
+            LayoutInflater inflater = (LayoutInflater)GetSystemService(Context.LayoutInflaterService);
+            View layout = null;
+
             //Creates logo and id name by referencing the file activity_main_drawer.xml which lists each one
             if (id == Resource.Id.nav_map)
             {
-                // Handles the map functions
-                Android.Widget.RelativeLayout mainLayout = (Android.Widget.RelativeLayout)FindViewById(Resource.Id.all_container);
-                Android.Widget.RelativeLayout parentLayout = (Android.Widget.RelativeLayout)FindViewById(Resource.Layout.app_bar_main);
-                LayoutInflater inflater = (LayoutInflater)GetSystemService(Context.LayoutInflaterService);
-                View layout = inflater.Inflate(Resource.Layout.content_main, parentLayout);
-                mainLayout.RemoveAllViews();
-                mainLayout.AddView(layout);
+                displayNavData = false;
+                layout = inflater.Inflate(Resource.Layout.content_map, null);
                 
             }
             else if (id == Resource.Id.nav_loc)
             {
-                Android.Widget.RelativeLayout mainLayout = (Android.Widget.RelativeLayout)FindViewById(Resource.Id.all_container);
-                LayoutInflater inflater = (LayoutInflater)GetSystemService(Context.LayoutInflaterService);
-                View layout = inflater.Inflate(Resource.Layout.content_local, null);
-                mainLayout.RemoveAllViews();
-                mainLayout.AddView(layout);
-               
+                displayNavData = true;
+                layout = inflater.Inflate(Resource.Layout.content_navigation, null);
             }
             else if (id == Resource.Id.nav_set)
             {
-
+                displayNavData = false;
+                layout = inflater.Inflate(Resource.Layout.content_settings, null);
             }
+
+            mainLayout.RemoveAllViews();
+            mainLayout.AddView(layout);
 
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             drawer.CloseDrawer(GravityCompat.Start);

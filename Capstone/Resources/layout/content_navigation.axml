@@ -8,9 +8,10 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/app_bar_main">
     <TextView
+		android:id="@+id/navigation_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:text="This is the where the WiFi Data will be displayed."/>
+        android:text="This is the navigation page."/>
 		
 </RelativeLayout>

@@ -35,7 +35,7 @@ namespace Localized.Fragments
             
             base.OnCreateView(inflater, container, savedInstanceState);
             
-            View view = inflater.Inflate(Resource.Layout.content_local, container, false);
+            View view = inflater.Inflate(Resource.Layout.content_navigation, container, false);
             
             //DrawerLayout drawerLocal = view.FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             //NavigationView navigationView = view.FindViewById<NavigationView>(Resource.Id.nav_view);

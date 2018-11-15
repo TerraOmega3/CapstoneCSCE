@@ -6,20 +6,21 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	app:layout_behavior="@string/appbar_scrolling_view_behavior"
-	tools:showIn="@layout/app_bar_main">
-
-	<TextView
-		android:id="@+id/main_text"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_centerInParent="true"
-		android:text="Welcome to EyeFi!" />
+	tools:showIn="@layout/app_bar_main"
+	android:minWidth="25px"
+	android:minHeight="25px">
 	<Button
-		android:text="FP On...Loc Off"
+		android:text="...meh"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_centerInParent="true"
-		android:layout_above="@id/main_text"
-		android:id="@+id/locSwitch" />
+		android:minWidth="25px"
+		android:minHeight="25px"
+		android:onClick="toggle_polling"
+		android:id="@+id/toggle_poll" />
+		
+
+
+
+	
 
 </RelativeLayout>
