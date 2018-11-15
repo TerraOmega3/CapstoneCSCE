@@ -21,20 +21,23 @@ using Java.Util;
 using Plugin.Geolocator;
 using RestSharp;
 using Newtonsoft.Json;
+using Android.Support.V4.Content;
+using Android;
+using Android.Content.PM;
 
 namespace Capstone
 {
     [Activity(Label = "EyeFi", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
 
-    public class MapHandler : Android.Support.V4.App.FragmentActivity, IOnMapReadyCallback
+    /*public class MapHandler : Android.Support.V4.App.FragmentActivity, IOnMapReadyCallback
     {
         public void OnMapReady(GoogleMap map)
         {
             map.AddMarker(new MarkerOptions().SetPosition(new LatLng(0, 0)).SetTitle("Marker"));
         }
-    }
+    }*/
 
-    public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener
+    public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener, IOnMapReadyCallback
     {
         //Change this to your own network ID name or in the schools case "tamulink-wpa"
         const string networkSSID = "\"" + "tamulink-wpa" + "\"";
@@ -44,11 +47,16 @@ namespace Capstone
         public int compare;
         public IList<ScanResult> scanResults;
         RestClient client;
-        MapHandler map_handler = new MapHandler();
+        //MapHandler map_handler = new MapHandler();
 
         bool polling = false;
         bool keepPolling = true;
         bool displayNavData = false;
+
+        public void OnMapReady(GoogleMap map)
+        {
+            map.AddMarker(new MarkerOptions().SetPosition(new LatLng(0, 0)).SetTitle("Marker"));
+        }
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -57,8 +65,19 @@ namespace Capstone
             SetContentView(Resource.Layout.activity_main);
 
             //Create map
-            var mapFrag = ((SupportMapFragment)SupportFragmentManager.FindFragmentById(Resource.Id.map));
-            mapFrag.GetMapAsync(map_handler);
+            if (ContextCompat.CheckSelfPermission(this, Manifest.Permission.AccessCoarseLocation) == (int)Permission.Granted && ContextCompat.CheckSelfPermission(this, Manifest.Permission.AccessFineLocation) == (int)Permission.Granted)
+            {
+                // We have permission, go ahead and use the location.
+                Console.WriteLine("PERMISSIONS GRANTED");
+                var mapFrag = ((SupportMapFragment)SupportFragmentManager.FindFragmentById(Resource.Id.map));
+                mapFrag.GetMapAsync(this);
+            }
+            else
+            {
+                // Permission is not granted. If necessary display rationale & request.
+                Console.WriteLine("NO PERMISSIONS GRANTED");
+            }
+            
 
             //Set up database connection
             var baseUrl = "https://testdb-05fa.restdb.io/rest/";
