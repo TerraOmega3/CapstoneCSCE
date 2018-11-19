@@ -30,15 +30,6 @@ using System.Linq;
 namespace Capstone
 {
     [Activity(Label = "EyeFi", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
-
-    /*public class MapHandler : Android.Support.V4.App.FragmentActivity, IOnMapReadyCallback
-    {
-        public void OnMapReady(GoogleMap map)
-        {
-            map.AddMarker(new MarkerOptions().SetPosition(new LatLng(0, 0)).SetTitle("Marker"));
-        }
-    }*/
-
     public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener, IOnMapReadyCallback
     {
         //Change this to your own network ID name or in the schools case "tamulink-wpa"
@@ -50,18 +41,18 @@ namespace Capstone
         public IList<ScanResult> scanResults;
         RestClient client;
 
-        Button LocSwitch;
         bool polling = false;
         //Start as false for Footprint, True for Localizing
         bool PollSwitch = false;
         bool displayNavData = false;
 
-        //Map
+        private MapFragment mapFragment;
         GoogleMap map;
 
         public void OnMapReady(GoogleMap m)
         {
             map = m;
+            map.UiSettings.CompassEnabled = true;
         }
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -75,8 +66,9 @@ namespace Capstone
             {
                 // We have permission, go ahead and use the location.
                 Console.WriteLine("PERMISSIONS GRANTED");
-                var mapFrag = ((SupportMapFragment)SupportFragmentManager.FindFragmentById(Resource.Id.map));
-                mapFrag.GetMapAsync(this);
+                mapFragment = MapFragment.NewInstance();
+                mapFragment.GetMapAsync(this);
+                this.FragmentManager.BeginTransaction().Add(Resource.Id.map, mapFragment, "map_fragment").Commit();
             }
             else
             {
@@ -229,6 +221,11 @@ namespace Capstone
                     wifiText.Append("\nLat: " + position.Latitude + "\nLong: " + position.Longitude);
                 });
             }
+
+            RunOnUiThread(() =>
+            {
+                map.AddMarker(new MarkerOptions().SetPosition(new LatLng(position.Latitude, position.Longitude)).SetTitle("Marker"));
+            });
 
             RunOnUiThread(() =>
             {
