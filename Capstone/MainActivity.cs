@@ -56,9 +56,12 @@ namespace Capstone
         bool PollSwitch = false;
         bool displayNavData = false;
 
-        public void OnMapReady(GoogleMap map)
+        //Map
+        GoogleMap map;
+
+        public void OnMapReady(GoogleMap m)
         {
-            map.AddMarker(new MarkerOptions().SetPosition(new LatLng(0, 0)).SetTitle("Marker"));
+            map = m;
         }
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -226,6 +229,11 @@ namespace Capstone
                     wifiText.Append("\nLat: " + position.Latitude + "\nLong: " + position.Longitude);
                 });
             }
+
+            RunOnUiThread(() =>
+            {
+                map.AddMarker(new MarkerOptions().SetPosition(new LatLng(position.Latitude, position.Longitude)).SetTitle("Marker"));
+            });
 
             //insert new fingerprint to database
             var request = new RestRequest(Method.POST);
