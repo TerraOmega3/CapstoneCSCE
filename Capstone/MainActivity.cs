@@ -30,11 +30,11 @@ using System.Linq;
 namespace Capstone
 {
     [Activity(Label = "EyeFi", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
-    public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener, IOnMapReadyCallback
+    public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener, IOnMapReadyCallback, GoogleMap.IOnMapClickListener
     {
         //Change this to your own network ID name or in the schools case "tamulink-wpa"
         const string networkSSID = "\"" + "tamulink-wpa" + "\"";
-       
+
         TextView wifiText;
         WifiManager wifiManager;
         public int compare;
@@ -43,18 +43,29 @@ namespace Capstone
 
         bool polling = false;
         //Start as false for Footprint, True for Localizing
-        bool PollSwitch = false;
+        bool PollSwitch = true;
         bool displayNavData = false;
 
         //Map vars
         private MapFragment mapFragment;
-        Marker marker;
+        Marker marker, dest;
         GoogleMap map;
 
         public void OnMapReady(GoogleMap m)
         {
             map = m;
             map.UiSettings.CompassEnabled = true;
+            map.SetOnMapClickListener(this);
+                
+        }
+
+        public void onMapClick(LatLng point)
+        {
+            if (dest != null)
+            {
+                dest.Remove();
+            }
+            dest = map.AddMarker(new MarkerOptions().Position(point).SetTitle("dest"));
         }
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -433,6 +444,7 @@ namespace Capstone
             }
             double lat = fpList[place].fp_latitude;
             double lon = fpList[place].fp_longitude;
+
             if (displayNavData)
             {
                 wifiText = (TextView)FindViewById(Resource.Id.navigation_text);
