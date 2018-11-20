@@ -46,7 +46,9 @@ namespace Capstone
         bool PollSwitch = false;
         bool displayNavData = false;
 
+        //Map vars
         private MapFragment mapFragment;
+        Marker marker;
         GoogleMap map;
 
         public void OnMapReady(GoogleMap m)
@@ -222,14 +224,31 @@ namespace Capstone
                 });
             }
 
-            RunOnUiThread(() =>
-            {
-                map.AddMarker(new MarkerOptions().SetPosition(new LatLng(position.Latitude, position.Longitude)).SetTitle("Marker"));
-            });
+     
 
             RunOnUiThread(() =>
             {
-                map.AddMarker(new MarkerOptions().SetPosition(new LatLng(position.Latitude, position.Longitude)).SetTitle("Marker"));
+                //Put marker down on current loc, remove previous marker
+                if (marker != null)
+                {
+                    marker.Remove();
+                }
+                else
+                {
+                    //Update map camera on first run only
+                    CameraPosition.Builder builder = CameraPosition.InvokeBuilder();
+                    builder.Target(new LatLng(position.Latitude, position.Longitude));
+                    builder.Zoom(18);
+                    builder.Bearing(155);
+                    builder.Tilt(65);
+
+                    CameraPosition cameraPosition = builder.Build();
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.NewCameraPosition(cameraPosition);
+                    map.MoveCamera(cameraUpdate);
+                }
+
+                //Update marker to current loc
+                marker = map.AddMarker(new MarkerOptions().SetPosition(new LatLng(position.Latitude, position.Longitude)).SetTitle("Marker"));
             });
 
             //insert new fingerprint to database
