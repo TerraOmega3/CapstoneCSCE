@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using System.Net.Http;
 using Android.App;
 using Android.Gms.Maps;
 using Android.Gms.Maps.Model;
@@ -26,6 +27,8 @@ using Android;
 using Android.Content.PM;
 using Newtonsoft.Json.Linq;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Capstone
 {
@@ -42,14 +45,18 @@ namespace Capstone
         RestClient client;
 
         bool polling = false;
-        //Start as false for Footprint, True for Localizing
-        bool PollSwitch = true;
+        //Start as true for wifi localization, false for gps
+        bool PollSwitch = false;
         bool displayNavData = false;
 
         //Map vars
         private MapFragment mapFragment;
         Marker marker, dest;
         GoogleMap map;
+
+        //Direction vars
+        HttpClient webclient = new HttpClient();
+        Polyline polyline = null;
 
         public void OnMapReady(GoogleMap m)
         {
@@ -66,6 +73,7 @@ namespace Capstone
                 dest.Remove();
             }
             dest = map.AddMarker(new MarkerOptions().SetPosition(point).SetTitle("dest"));
+            createRoute();
         }
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -86,7 +94,7 @@ namespace Capstone
             else
             {
                 // Permission is not granted. If necessary display rationale & request.
-                Console.WriteLine("NO PERMISSIONS GRANTED");
+                
             }
             
 
@@ -155,13 +163,13 @@ namespace Capstone
         {
             if (!polling)
             {
-                if (!PollSwitch)
+                if (PollSwitch)
                 {
-                    findPosition(sender, e);
+                    FindLocalization(sender, e);
                 }
                 else
                 {
-                    FindLocalization(sender, e);
+                    findPosition(sender, e);
                 }
             }
         }
@@ -544,6 +552,83 @@ namespace Capstone
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             drawer.CloseDrawer(GravityCompat.Start);
             return true;
+        }
+
+        //Creates the route from marker to dest and displays it on the map
+        async Task createRoute()
+        {
+            LatLng start = marker.Position;
+            LatLng end = dest.Position;
+
+            string rawData = await GetRawRequest(start, end);
+            //dynamic object since we don't know what the object names are yet
+            dynamic routeObj = JsonConvert.DeserializeObject(rawData);
+            //There is a lot more information in this, but legs is a good general place to start.
+            //Details like addresses, names, and turn by turn diretions are available
+            var legs = routeObj.routes[0].legs;
+
+            List<LatLng> lines = new List<LatLng>();
+
+            //Go through the "legs" of the trip, should only be 1 for us always...but just in case.
+            foreach(var leg in legs)
+            {
+                //Get the steps of the journey (aka each direction change has a latlng value)
+                var steps = leg.steps;
+                foreach (var step in steps)
+                {
+                    double slat = step.start_location.lat;
+                    double slng = step.start_location.lng;
+                    double elat = step.end_location.lat;
+                    double elng = step.end_location.lng;
+
+                    LatLng pt1 = new LatLng(slat, slng);
+                    LatLng pt2 = new LatLng(elat, elng);
+
+                    //Add the points to the polyline list
+                    lines.Add(pt1);
+                    lines.Add(pt2);
+                }
+            }
+
+            //Set how the polyline will visually look, there are more options
+            var polylineOptions = new PolylineOptions()
+                            .InvokeColor(Android.Graphics.Color.Blue);
+
+            //Fill polyline options with the points
+            foreach (LatLng line in lines)
+            {
+                polylineOptions.Add(line);
+            }
+
+            //Run on UI thread so it shows up on map
+            RunOnUiThread(() => {
+                //Remove old polyline
+                if (polyline != null)
+                {
+                    polyline.Remove();
+                }
+                //Add new polyline
+                polyline = map.AddPolyline(polylineOptions);
+            });
+        }
+        
+        //Gets the raw json response from google directions api
+        async Task<string> GetRawRequest(LatLng start, LatLng end)
+        {
+            //Yeah, it's gonna be deactivated asap
+            string apikey = "AIzaSyBp5rR-4ubhga0gTeUKZHS9ToTMltGHObM";
+            string apiUrl = "https://maps.googleapis.com/maps/api/directions/json?origin=" + start.Latitude + "," + start.Longitude + "&destination=" + end.Latitude + "," + end.Longitude + "&mode=walking&key=" + apikey;
+
+            using (var response = await webclient.GetAsync(apiUrl))
+            {
+                if (response.IsSuccessStatusCode)
+                {
+                    var info = await response.Content.ReadAsStringAsync();
+                    return info;
+                }
+            }
+
+            return null;
         }
     }
 }
