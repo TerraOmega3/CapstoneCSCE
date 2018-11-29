@@ -200,7 +200,11 @@ namespace Capstone
                 
                 Address address = addressList[0];
                 LatLng latLng = new LatLng(address.Latitude, address.Longitude);
-                destination = map.AddMarker(new MarkerOptions().SetPosition(latLng).SetTitle("Marker"));
+                if(destination != null)
+                {
+                    destination.Remove();
+                }
+                destination = map.AddMarker(new MarkerOptions().SetPosition(latLng).SetTitle("dest"));
                 map.AnimateCamera(CameraUpdateFactory.NewLatLng(latLng));
             }
         }
