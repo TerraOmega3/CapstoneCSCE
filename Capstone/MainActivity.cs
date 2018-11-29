@@ -219,21 +219,11 @@ namespace Capstone
             {
                 if (PollSwitch)
                 {
-<<<<<<< HEAD
                     FindLocalization(sender, e);
                 }
                 else
                 {
                     findPosition(sender, e);
-=======
-                    findPosition(sender, e);
-                    polling = false;
-                }
-                else
-                {
-                    FindLocalization(sender, e);
-                    polling = false;
->>>>>>> Base-App
                 }
             }
         }
