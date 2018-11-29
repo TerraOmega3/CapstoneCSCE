@@ -26,6 +26,7 @@ using Android;
 using Android.Content.PM;
 using Newtonsoft.Json.Linq;
 using System.Linq;
+using Android.Views.InputMethods;
 
 namespace Capstone
 {
@@ -43,12 +44,13 @@ namespace Capstone
 
         bool polling = false;
         //Start as false for Footprint, True for Localizing
-        bool PollSwitch = false;
+        bool PollSwitch = true;
         bool displayNavData = false;
 
         //Map vars
         private MapFragment mapFragment;
         Marker marker;
+        Marker destination;
         GoogleMap map;
 
         public void OnMapReady(GoogleMap m)
@@ -56,7 +58,7 @@ namespace Capstone
             map = m;
             map.UiSettings.CompassEnabled = true;
         }
-
+        
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -115,7 +117,8 @@ namespace Capstone
                     break;
                 }
             }
-
+            Button locationSearch = (Button)FindViewById(Resource.Id.search_button);
+            locationSearch.Click += onMapSearch;
             //Calls the polling function every 4 seconds
             System.Timers.Timer pollTimer = new System.Timers.Timer();
             pollTimer.Interval = 4000; // in miliseconds
@@ -138,7 +141,38 @@ namespace Capstone
             NavigationView navigationView = FindViewById<NavigationView>(Resource.Id.nav_view);
             navigationView.SetNavigationItemSelectedListener(this);
         }
+        private void DismissKeyboard()
+        {
+            var view = CurrentFocus;
+            if (view != null)
+            {
+                var imm = (InputMethodManager)GetSystemService(InputMethodService);
+                imm.HideSoftInputFromWindow(view.WindowToken, 0);
+            }
+        }
+        public void onMapSearch(object sender, EventArgs e)
+        {
+            DismissKeyboard();
+            EditText locationSearch = (EditText)FindViewById(Resource.Id.Content_search);
+            String location = locationSearch.Text;
+            IList<Address> addressList = null;
 
+            if (location != null || !location.Equals(""))
+            {
+                if (destination != null)
+                {
+                    destination.Remove();
+                }
+
+                Geocoder geocoder = new Geocoder(this);
+                addressList = geocoder.GetFromLocationName(location, 1);
+
+                Address address = addressList[0];
+                LatLng latLng = new LatLng(address.Latitude, address.Longitude);
+                destination = map.AddMarker(new MarkerOptions().SetPosition(latLng).SetTitle("Marker"));
+                map.AnimateCamera(CameraUpdateFactory.NewLatLng(latLng));
+            }
+        }
         //Function to poll WiFi RSSID information, and display it
         private void pollWiFi(object sender, ElapsedEventArgs e)
         {
@@ -147,10 +181,12 @@ namespace Capstone
                 if (!PollSwitch)
                 {
                     findPosition(sender, e);
+                    polling = false;
                 }
                 else
                 {
                     FindLocalization(sender, e);
+                    polling = false;
                 }
             }
         }
@@ -224,32 +260,7 @@ namespace Capstone
                 });
             }
 
-     
-
-            RunOnUiThread(() =>
-            {
-                //Put marker down on current loc, remove previous marker
-                if (marker != null)
-                {
-                    marker.Remove();
-                }
-                else
-                {
-                    //Update map camera on first run only
-                    CameraPosition.Builder builder = CameraPosition.InvokeBuilder();
-                    builder.Target(new LatLng(position.Latitude, position.Longitude));
-                    builder.Zoom(18);
-                    builder.Bearing(155);
-                    builder.Tilt(65);
-
-                    CameraPosition cameraPosition = builder.Build();
-                    CameraUpdate cameraUpdate = CameraUpdateFactory.NewCameraPosition(cameraPosition);
-                    map.MoveCamera(cameraUpdate);
-                }
-
-                //Update marker to current loc
-                marker = map.AddMarker(new MarkerOptions().SetPosition(new LatLng(position.Latitude, position.Longitude)).SetTitle("Marker"));
-            });
+    
 
             //insert new fingerprint to database
             var request = new RestRequest(Method.POST);
@@ -366,7 +377,16 @@ namespace Capstone
                     else
                     {
                         List<Parents> arpList2 = (JsonConvert.DeserializeObject<List<Parents>>(json_text));
-                        arpList = arpList.Intersect(arpList2, new ParentsComp()).ToList();
+                        //arpList = arpList.Intersect(arpList2, new ParentsComp()).ToList();
+                        var tempList = arpList.Where(x => arpList2.Any(y => y._parent_id == x._parent_id)).ToList();
+                        if (tempList.Count > 11)
+                        {
+                            arpList = tempList;
+                        }
+                        else
+                        {
+                            goto parentSearch;
+                        }
                     }
                 }
                 else
@@ -376,6 +396,7 @@ namespace Capstone
                     Console.WriteLine(response.ErrorException);
                 }
             }
+            parentSearch:
             //Scan through the parent list and get their information from the footprint database
             List<Fingerprint> fpList = new List<Fingerprint>();
             for (int j = 0; j < arpList.Count; j++)
@@ -433,6 +454,32 @@ namespace Capstone
             }
             double lat = fpList[place].fp_latitude;
             double lon = fpList[place].fp_longitude;
+
+            RunOnUiThread(() =>
+            {
+                //Put marker down on current loc, remove previous marker
+                if (marker != null)
+                {
+                    marker.Remove();
+                }
+                else
+                {
+                    //Update map camera on first run only
+                    CameraPosition.Builder builder = CameraPosition.InvokeBuilder();
+                    builder.Target(new LatLng(lat, lon));
+                    builder.Zoom(18);
+                    builder.Bearing(155);
+                    builder.Tilt(65);
+
+                    CameraPosition cameraPosition = builder.Build();
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.NewCameraPosition(cameraPosition);
+                    map.MoveCamera(cameraUpdate);
+                }
+
+                //Update marker to current loc
+                marker = map.AddMarker(new MarkerOptions().SetPosition(new LatLng(lat, lon)).SetTitle("Marker"));
+            });
+
             if (displayNavData)
             {
                 wifiText = (TextView)FindViewById(Resource.Id.navigation_text);
