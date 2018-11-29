@@ -31,11 +31,11 @@ using Android.Views.InputMethods;
 namespace Capstone
 {
     [Activity(Label = "EyeFi", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
-    public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener, IOnMapReadyCallback
+    public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener, IOnMapReadyCallback, GoogleMap.IOnMapClickListener
     {
         //Change this to your own network ID name or in the schools case "tamulink-wpa"
         const string networkSSID = "\"" + "tamulink-wpa" + "\"";
-       
+
         TextView wifiText;
         WifiManager wifiManager;
         public int compare;
@@ -57,8 +57,19 @@ namespace Capstone
         {
             map = m;
             map.UiSettings.CompassEnabled = true;
+            map.SetOnMapClickListener(this);
+                
         }
-        
+
+        public void OnMapClick(LatLng point)
+        {
+            if (destination != null)
+            {
+                destination.Remove();
+            }
+            destination = map.AddMarker(new MarkerOptions().SetPosition(point).SetTitle("dest"));
+        }
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -262,6 +273,31 @@ namespace Capstone
 
     
 
+            RunOnUiThread(() =>
+            {
+                //Put marker down on current loc, remove previous marker
+                if (marker != null)
+                {
+                    marker.Remove();
+                }
+                else
+                {
+                    //Update map camera on first run only
+                    CameraPosition.Builder builder = CameraPosition.InvokeBuilder();
+                    builder.Target(new LatLng(position.Latitude, position.Longitude));
+                    builder.Zoom(18);
+                    builder.Bearing(155);
+                    builder.Tilt(65);
+
+                    CameraPosition cameraPosition = builder.Build();
+                    CameraUpdate cameraUpdate = CameraUpdateFactory.NewCameraPosition(cameraPosition);
+                    map.MoveCamera(cameraUpdate);
+                }
+
+                //Update marker to current loc
+                marker = map.AddMarker(new MarkerOptions().SetPosition(new LatLng(position.Latitude, position.Longitude)).SetTitle("currentLoc"));
+            });
+
             //insert new fingerprint to database
             var request = new RestRequest(Method.POST);
             request.Resource = "fingerprint-test";
@@ -457,7 +493,7 @@ namespace Capstone
 
             RunOnUiThread(() =>
             {
-                //Put marker down on current loc, remove previous marker
+                //Put marker down on found position, remove previous marker
                 if (marker != null)
                 {
                     marker.Remove();
@@ -477,7 +513,7 @@ namespace Capstone
                 }
 
                 //Update marker to current loc
-                marker = map.AddMarker(new MarkerOptions().SetPosition(new LatLng(lat, lon)).SetTitle("Marker"));
+                marker = map.AddMarker(new MarkerOptions().SetPosition(new LatLng(lat, lon)).SetTitle("currentLoc"));
             });
 
             if (displayNavData)
