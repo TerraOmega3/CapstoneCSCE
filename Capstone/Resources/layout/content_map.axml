@@ -31,11 +31,14 @@
 		<EditText
             android:id="@+id/Content_search"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="35dip"
 		    android:gravity="top"
+			android:imeOptions="actionSearch"
+		    android:inputType="text"
 		    android:textColor="@android:color/black"
             android:background="@android:color/white"
 		    android:layout_marginLeft="60dip"
+			android:layout_marginTop="-4dip"
             android:hint="Search Location Here" />
 
 

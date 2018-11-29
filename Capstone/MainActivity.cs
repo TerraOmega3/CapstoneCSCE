@@ -128,8 +128,24 @@ namespace Capstone
                     break;
                 }
             }
+
+            //Click the search button to search for a destination.
             Button locationSearch = (Button)FindViewById(Resource.Id.search_button);
             locationSearch.Click += onMapSearch;
+
+            //If you decide to press enter instead of the button then just click the button
+            EditText DestSearch = (EditText)FindViewById(Resource.Id.Content_search);
+            DestSearch.EditorAction += (sender, e) => {
+                if (e.ActionId == ImeAction.Search)
+                {
+                    locationSearch.PerformClick();
+                }
+                else
+                {
+                    e.Handled = false;
+                }
+            };
+
             //Calls the polling function every 4 seconds
             System.Timers.Timer pollTimer = new System.Timers.Timer();
             pollTimer.Interval = 4000; // in miliseconds
@@ -177,13 +193,18 @@ namespace Capstone
 
                 Geocoder geocoder = new Geocoder(this);
                 addressList = geocoder.GetFromLocationName(location, 1);
-
+                if (addressList.Count == 0)
+                {
+                    return;
+                }
+                
                 Address address = addressList[0];
                 LatLng latLng = new LatLng(address.Latitude, address.Longitude);
                 destination = map.AddMarker(new MarkerOptions().SetPosition(latLng).SetTitle("Marker"));
                 map.AnimateCamera(CameraUpdateFactory.NewLatLng(latLng));
             }
         }
+        
         //Function to poll WiFi RSSID information, and display it
         private void pollWiFi(object sender, ElapsedEventArgs e)
         {
@@ -415,7 +436,7 @@ namespace Capstone
                         List<Parents> arpList2 = (JsonConvert.DeserializeObject<List<Parents>>(json_text));
                         //arpList = arpList.Intersect(arpList2, new ParentsComp()).ToList();
                         var tempList = arpList.Where(x => arpList2.Any(y => y._parent_id == x._parent_id)).ToList();
-                        if (tempList.Count > 11)
+                        if (tempList.Count > 12)
                         {
                             arpList = tempList;
                         }
