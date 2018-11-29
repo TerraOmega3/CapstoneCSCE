@@ -27,8 +27,7 @@ using Android;
 using Android.Content.PM;
 using Newtonsoft.Json.Linq;
 using System.Linq;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using Android.Views.InputMethods;
 
 namespace Capstone
 {
@@ -51,7 +50,8 @@ namespace Capstone
 
         //Map vars
         private MapFragment mapFragment;
-        Marker marker, dest;
+        Marker marker;
+        Marker destination;
         GoogleMap map;
 
         //Direction vars
@@ -68,11 +68,12 @@ namespace Capstone
 
         public void OnMapClick(LatLng point)
         {
-            if (dest != null)
+            if (destination != null)
             {
-                dest.Remove();
+                destination.Remove();
             }
-            dest = map.AddMarker(new MarkerOptions().SetPosition(point).SetTitle("dest"));
+
+            destination = map.AddMarker(new MarkerOptions().SetPosition(point).SetTitle("dest"));
             createRoute();
         }
 
@@ -135,6 +136,23 @@ namespace Capstone
                 }
             }
 
+            //Click the search button to search for a destination.
+            Button locationSearch = (Button)FindViewById(Resource.Id.search_button);
+            locationSearch.Click += onMapSearch;
+
+            //If you decide to press enter instead of the button then just click the button
+            EditText DestSearch = (EditText)FindViewById(Resource.Id.Content_search);
+            DestSearch.EditorAction += (sender, e) => {
+                if (e.ActionId == ImeAction.Search)
+                {
+                    locationSearch.PerformClick();
+                }
+                else
+                {
+                    e.Handled = false;
+                }
+            };
+
             //Calls the polling function every 4 seconds
             System.Timers.Timer pollTimer = new System.Timers.Timer();
             pollTimer.Interval = 4000; // in miliseconds
@@ -157,7 +175,43 @@ namespace Capstone
             NavigationView navigationView = FindViewById<NavigationView>(Resource.Id.nav_view);
             navigationView.SetNavigationItemSelectedListener(this);
         }
+        private void DismissKeyboard()
+        {
+            var view = CurrentFocus;
+            if (view != null)
+            {
+                var imm = (InputMethodManager)GetSystemService(InputMethodService);
+                imm.HideSoftInputFromWindow(view.WindowToken, 0);
+            }
+        }
+        public void onMapSearch(object sender, EventArgs e)
+        {
+            DismissKeyboard();
+            EditText locationSearch = (EditText)FindViewById(Resource.Id.Content_search);
+            String location = locationSearch.Text;
+            IList<Address> addressList = null;
 
+            if (location != null || !location.Equals(""))
+            {
+                if (destination != null)
+                {
+                    destination.Remove();
+                }
+
+                Geocoder geocoder = new Geocoder(this);
+                addressList = geocoder.GetFromLocationName(location, 1);
+                if (addressList.Count == 0)
+                {
+                    return;
+                }
+                
+                Address address = addressList[0];
+                LatLng latLng = new LatLng(address.Latitude, address.Longitude);
+                destination = map.AddMarker(new MarkerOptions().SetPosition(latLng).SetTitle("Marker"));
+                map.AnimateCamera(CameraUpdateFactory.NewLatLng(latLng));
+            }
+        }
+        
         //Function to poll WiFi RSSID information, and display it
         private void pollWiFi(object sender, ElapsedEventArgs e)
         {
@@ -165,11 +219,21 @@ namespace Capstone
             {
                 if (PollSwitch)
                 {
+<<<<<<< HEAD
                     FindLocalization(sender, e);
                 }
                 else
                 {
                     findPosition(sender, e);
+=======
+                    findPosition(sender, e);
+                    polling = false;
+                }
+                else
+                {
+                    FindLocalization(sender, e);
+                    polling = false;
+>>>>>>> Base-App
                 }
             }
         }
@@ -243,7 +307,7 @@ namespace Capstone
                 });
             }
 
-     
+    
 
             RunOnUiThread(() =>
             {
@@ -385,7 +449,16 @@ namespace Capstone
                     else
                     {
                         List<Parents> arpList2 = (JsonConvert.DeserializeObject<List<Parents>>(json_text));
-                        arpList = arpList.Intersect(arpList2, new ParentsComp()).ToList();
+                        //arpList = arpList.Intersect(arpList2, new ParentsComp()).ToList();
+                        var tempList = arpList.Where(x => arpList2.Any(y => y._parent_id == x._parent_id)).ToList();
+                        if (tempList.Count > 12)
+                        {
+                            arpList = tempList;
+                        }
+                        else
+                        {
+                            goto parentSearch;
+                        }
                     }
                 }
                 else
@@ -395,6 +468,7 @@ namespace Capstone
                     Console.WriteLine(response.ErrorException);
                 }
             }
+            parentSearch:
             //Scan through the parent list and get their information from the footprint database
             List<Fingerprint> fpList = new List<Fingerprint>();
             for (int j = 0; j < arpList.Count; j++)
@@ -558,7 +632,7 @@ namespace Capstone
         async Task createRoute()
         {
             LatLng start = marker.Position;
-            LatLng end = dest.Position;
+            LatLng end = destination.Position;
 
             string rawData = await GetRawRequest(start, end);
             //dynamic object since we don't know what the object names are yet
