@@ -28,6 +28,7 @@ using Android.Content.PM;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 using Android.Views.InputMethods;
+using Plugin.Compass;
 
 namespace Capstone
 {
@@ -57,6 +58,9 @@ namespace Capstone
         //Direction vars
         HttpClient webclient = new HttpClient();
         Polyline polyline = null;
+
+        //Compass vars
+        double cHeading;
 
         public void OnMapReady(GoogleMap m)
         {
@@ -102,6 +106,16 @@ namespace Capstone
 
             //Create map in initial tab
             CreateMap();
+
+            //Create the compass
+            CrossCompass.Current.CompassChanged += (s, e) =>
+            {
+                cHeading = e.Heading;
+                //Console.WriteLine("*** Compass Heading = {0}", e.Heading);
+            };
+
+            CrossCompass.Current.Start();
+
 
             //Set up database connection
             var baseUrl = "https://testdb-05fa.restdb.io/rest/";
