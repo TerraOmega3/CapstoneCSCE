@@ -28,10 +28,10 @@ using Android.Content.PM;
 using Newtonsoft.Json.Linq;
 using System.Linq;
 using Android.Views.InputMethods;
-
+using Plugin.Compass;
 namespace Capstone
 {
-    [Activity(Label = "EyeFi", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true)]
+    [Activity(Label = "EyeFi", Theme = "@style/AppTheme.NoActionBar", MainLauncher = true, ScreenOrientation = ScreenOrientation.Portrait)]
     public class MainActivity : AppCompatActivity, NavigationView.IOnNavigationItemSelectedListener, IOnMapReadyCallback, GoogleMap.IOnMapClickListener
     {
         //Change this to your own network ID name or in the schools case "tamulink-wpa"
@@ -54,9 +54,13 @@ namespace Capstone
         Marker marker;
         Marker destination;
         GoogleMap map;
+        List<LatLng> lines;
         //Direction vars
         HttpClient webclient = new HttpClient();
         Polyline polyline = null;
+
+        //Compass vars
+        double cHeading;
 
         public void OnMapReady(GoogleMap m)
         {
@@ -134,7 +138,72 @@ namespace Capstone
             //Update marker to current loc
             
         }
-
+        bool checkIntersect()
+        {
+            Console.WriteLine("CHECKING!!!!!!!!!");
+            //Creat bearing vector (Bx, By) based on compass heading
+            double rad = (-(cHeading - 90)) * (Math.PI / 180);
+            double Bx = Math.Cos(rad);
+            double By = Math.Sin(rad);
+            //Create pin vector (pin point - current position)
+            LatLng mPos = marker.Position;
+            double Cx = mPos.Longitude;
+            double Cy = mPos.Latitude;
+            double Px = lines[1].Longitude;
+            double Py = lines[1].Latitude;
+            //normalize the vectors
+            double mag = Math.Sqrt(Math.Pow(Bx, 2) + Math.Pow(By, 2));
+            Bx /= mag;
+            By /= mag;
+            mag = Math.Sqrt(Math.Pow(Cx, 2) + Math.Pow(Cy, 2));
+            Cx /= mag;
+            Cy /= mag;
+            mag = Math.Sqrt(Math.Pow(Px, 2) + Math.Pow(Py, 2));
+            Px /= mag;
+            Py /= mag;
+            //Normalized pin vector
+            double X2 = Px - Cx;
+            double Y2 = Py - Cy;
+            //Calculate intersection point of pin vector and bearing vector
+            double slopeA = (Bx == 0) ? 0.0 : By / Bx;
+            double slopeB = (X2 == 0) ? 0.0 : Y2 / X2;
+            double Xi, Yi;
+            if (slopeA == slopeB)
+            {
+                //Parallel
+                return false;
+            }
+            else if (slopeA == 0 && slopeB != 0)
+            {
+                Xi = Cx;
+                Yi = Bx * slopeB + Cy;
+            }
+            else if (slopeB == 0 && slopeA != 0)
+            {
+                Xi = Bx;
+                Yi = Bx * slopeA + Cy;
+            }
+            else
+            {
+                Xi = (slopeA * Cx - slopeB * Bx + By - Cy) / (slopeA - slopeB);
+                Yi = slopeB * (Xi - Bx) + By;
+            }
+            bool right = false;
+            if (Px > Cx)
+                right = true;
+            if (right)
+            {
+                if (Xi > Cx)
+                    return true;
+            }
+            else
+            {
+                if (Xi < Cx)
+                    return true;
+            }
+            return false;
+        }
+        private Vibrator myVib;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -143,6 +212,22 @@ namespace Capstone
 
             //Create map in initial tab
             CreateMap();
+            myVib = (Vibrator)this.GetSystemService(VibratorService);
+            //Create the compass
+            CrossCompass.Current.CompassChanged += (s, e) =>
+            {
+                cHeading = e.Heading;
+                //Console.WriteLine("*** Compass Heading = {0}", e.Heading);
+                //if heading is pointing towards end of current line give feedback
+                if (marker != null && lines != null && lines.Count > 0 && checkIntersect())
+                {
+                    myVib.Vibrate(100);
+                    Console.WriteLine("INTERSECTION!!!!!!!!!!!!!!!!!!!!!!!!!");
+                    Console.WriteLine("Heading: " + cHeading);
+                }
+            };
+            Task.Run(() => { CrossCompass.Current.Start(); });
+
 
             //Set up database connection
             var baseUrl = "https://testdb-05fa.restdb.io/rest/";
@@ -749,7 +834,7 @@ namespace Capstone
             //Details like addresses, names, and turn by turn diretions are available
             var legs = routeObj.routes[0].legs;
 
-            List<LatLng> lines = new List<LatLng>();
+            lines = new List<LatLng>();
 
             //Go through the "legs" of the trip, should only be 1 for us always...but just in case.
             foreach(var leg in legs)
