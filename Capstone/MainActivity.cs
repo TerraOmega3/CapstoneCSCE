@@ -77,13 +77,8 @@ namespace Capstone
             createRoute();
         }
 
-        protected override void OnCreate(Bundle savedInstanceState)
+        public void CreateMap()
         {
-            base.OnCreate(savedInstanceState);
-            //Creates main page layout by referencing activity_main.axml
-            SetContentView(Resource.Layout.activity_main);
-
-            //Create map
             if (ContextCompat.CheckSelfPermission(this, Manifest.Permission.AccessCoarseLocation) == (int)Permission.Granted && ContextCompat.CheckSelfPermission(this, Manifest.Permission.AccessFineLocation) == (int)Permission.Granted)
             {
                 // We have permission, go ahead and use the location.
@@ -95,9 +90,18 @@ namespace Capstone
             else
             {
                 // Permission is not granted. If necessary display rationale & request.
-                
+
             }
-            
+        }
+
+        protected override void OnCreate(Bundle savedInstanceState)
+        {
+            base.OnCreate(savedInstanceState);
+            //Creates main page layout by referencing activity_main.axml
+            SetContentView(Resource.Layout.activity_main);
+
+            //Create map in initial tab
+            CreateMap();
 
             //Set up database connection
             var baseUrl = "https://testdb-05fa.restdb.io/rest/";
@@ -605,8 +609,9 @@ namespace Capstone
             if (id == Resource.Id.nav_map)
             {
                 displayNavData = false;
+                marker = null;
                 layout = inflater.Inflate(Resource.Layout.content_map, null);
-                
+                CreateMap();
             }
             else if (id == Resource.Id.nav_loc)
             {
