@@ -147,7 +147,7 @@ namespace Capstone
                 //Console.WriteLine("*** Compass Heading = {0}", e.Heading);
             };
 
-            CrossCompass.Current.Start();
+            Task.Run(() => { CrossCompass.Current.Start(); });
 
 
             //Set up database connection
@@ -710,6 +710,8 @@ namespace Capstone
             foreach(var leg in legs)
             {
                 //Get the steps of the journey (aka each direction change has a latlng value)
+
+                Console.WriteLine(legs);
                 var steps = leg.steps;
                 foreach (var step in steps)
                 {
