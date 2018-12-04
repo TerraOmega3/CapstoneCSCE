@@ -142,7 +142,7 @@ namespace Capstone
         {
             Console.WriteLine("CHECKING!!!!!!!!!");
             //Creat bearing vector (Bx, By) based on compass heading
-            double rad = (-(cHeading - 90)) * (Math.PI / 180);
+            double rad = ((cHeading)) * (Math.PI / 180);
             double Bx = Math.Cos(rad);
             double By = Math.Sin(rad);
             //Create pin vector (pin point - current position)
@@ -578,6 +578,10 @@ namespace Capstone
                 Console.WriteLine(response.Content);
                 if (i > 4)
                 {
+                    if (displayNavData && loadingText == null)
+                    {
+                        loadingText = (TextView)FindViewById(Resource.Id.loading_text);
+                    }
                     if (loadingText != null)
                     {
                         RunOnUiThread(() => { loadingText.Text = "||.....|"; });
@@ -612,6 +616,10 @@ namespace Capstone
                 
             }
             parentSearch:
+            if (displayNavData && loadingText == null)
+            {
+                loadingText = (TextView)FindViewById(Resource.Id.loading_text);
+            }
             if (loadingText != null)
             {
                 RunOnUiThread(() => { loadingText.Text = "|||....|"; });
@@ -630,6 +638,10 @@ namespace Capstone
                 Console.WriteLine(response.Content);
                 if (j > arpList.Count / 2)
                 {
+                    if (displayNavData && loadingText == null)
+                    {
+                        loadingText = (TextView)FindViewById(Resource.Id.loading_text);
+                    }
                     if (loadingText != null)
                     {
                         RunOnUiThread(() => { loadingText.Text = "||||...|"; });
@@ -652,6 +664,10 @@ namespace Capstone
                     Console.WriteLine(response.ErrorMessage);
                     Console.WriteLine(response.ErrorException);
                 }
+            }
+            if (displayNavData && loadingText == null)
+            {
+                loadingText = (TextView)FindViewById(Resource.Id.loading_text);
             }
             if (loadingText != null)
             {
@@ -682,6 +698,10 @@ namespace Capstone
                     place = k;
                     lowest = sum;
                 }
+            }
+            if (displayNavData && loadingText == null)
+            {
+                loadingText = (TextView)FindViewById(Resource.Id.loading_text);
             }
             if (loadingText != null)
             {
@@ -723,6 +743,10 @@ namespace Capstone
 
                 RunOnUiThread(() => {
                     wifiText.Text = "\nLat: " + lat + "\nLong: " + lon; });
+            }
+            if (displayNavData && loadingText == null)
+            {
+                loadingText = (TextView)FindViewById(Resource.Id.loading_text);
             }
             if (displayNavData && loadingText != null)
             {
