@@ -92,6 +92,22 @@ namespace Capstone
                 // Permission is not granted. If necessary display rationale & request.
 
             }
+            //Click the search button to search for a destination.
+            Button locationSearch = (Button)FindViewById(Resource.Id.search_button);
+            locationSearch.Click += onMapSearch;
+
+            //If you decide to press enter instead of the button then just click the button
+            EditText DestSearch = (EditText)FindViewById(Resource.Id.Content_search);
+            DestSearch.EditorAction += (sender, e) => {
+                if (e.ActionId == ImeAction.Search)
+                {
+                    locationSearch.PerformClick();
+                }
+                else
+                {
+                    e.Handled = false;
+                }
+            };
         }
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -611,21 +627,26 @@ namespace Capstone
                 displayNavData = false;
                 marker = null;
                 layout = inflater.Inflate(Resource.Layout.content_map, null);
+                mainLayout.RemoveAllViews();
+                mainLayout.AddView(layout);
                 CreateMap();
             }
             else if (id == Resource.Id.nav_loc)
             {
                 displayNavData = true;
                 layout = inflater.Inflate(Resource.Layout.content_navigation, null);
+                mainLayout.RemoveAllViews();
+                mainLayout.AddView(layout);
             }
             else if (id == Resource.Id.nav_set)
             {
                 displayNavData = false;
                 layout = inflater.Inflate(Resource.Layout.content_settings, null);
+                mainLayout.RemoveAllViews();
+                mainLayout.AddView(layout);
             }
 
-            mainLayout.RemoveAllViews();
-            mainLayout.AddView(layout);
+            
 
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             drawer.CloseDrawer(GravityCompat.Start);
