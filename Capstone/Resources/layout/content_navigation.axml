@@ -13,5 +13,11 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:text="Data is being Collected."/>
-		
+	<TextView
+		android:id="@+id/loading_text"
+        android:layout_width="100dip"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+		android:layout_toRightOf="@+id/navigation_text"
+        android:text="|......|"/>
 </RelativeLayout>

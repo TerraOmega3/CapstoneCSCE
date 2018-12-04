@@ -38,6 +38,7 @@ namespace Capstone
         const string networkSSID = "\"" + "tamulink-wpa" + "\"";
 
         TextView wifiText;
+        TextView loadingText;
         WifiManager wifiManager;
         public int compare;
         public IList<ScanResult> scanResults;
@@ -75,6 +76,11 @@ namespace Capstone
                 CameraUpdate cameraUpdate = CameraUpdateFactory.NewCameraPosition(cameraPosition);
                 map.MoveCamera(cameraUpdate);
                 marker = map.AddMarker(new MarkerOptions().SetPosition(new LatLng(marker.Position.Latitude, marker.Position.Longitude)).SetTitle("currentLoc"));
+                if (destination != null)
+                {
+                    destination = map.AddMarker(new MarkerOptions().SetPosition(new LatLng(destination.Position.Latitude, destination.Position.Longitude)).SetTitle("dest"));
+                    createRoute();
+                }
             }
 
         }
@@ -87,7 +93,9 @@ namespace Capstone
             }
 
             destination = map.AddMarker(new MarkerOptions().SetPosition(point).SetTitle("dest"));
-            createRoute();
+            if (marker != null) {
+                createRoute();
+            }
         }
 
         public void CreateMap()
@@ -241,16 +249,18 @@ namespace Capstone
                 {
                     return;
                 }
-                
+
                 Address address = addressList[0];
                 LatLng latLng = new LatLng(address.Latitude, address.Longitude);
-                if(destination != null)
+                if (destination != null)
                 {
                     destination.Remove();
                 }
                 destination = map.AddMarker(new MarkerOptions().SetPosition(latLng).SetTitle("dest"));
                 map.AnimateCamera(CameraUpdateFactory.NewLatLng(latLng));
-                createRoute();
+                if (marker != null) { 
+                    createRoute();
+                }
             }
         }
         
@@ -458,6 +468,14 @@ namespace Capstone
             wifiManager.StartScan();
             scanResults = wifiManager.ScanResults;
             quickSort(scanResults, 0, scanResults.Count - 1);
+            if (displayNavData)
+            {
+                loadingText = (TextView)FindViewById(Resource.Id.loading_text);
+            }
+            if (loadingText != null)
+            {
+                RunOnUiThread(() => { loadingText.Text = "|......|"; });
+            }
             //A list of Parent ID's
             List<Parents> arpList = new List<Parents>();
             //Find all the parents(Coordinates Footprints) associated with the AccessPoints we just scanned
@@ -473,6 +491,13 @@ namespace Capstone
                 request.AddParameter("metafields", true);
                 IRestResponse response = client.Execute(request);
                 Console.WriteLine(response.Content);
+                if (i > 4)
+                {
+                    if (loadingText != null)
+                    {
+                        RunOnUiThread(() => { loadingText.Text = "||.....|"; });
+                    }
+                }
                 if (response.IsSuccessful)
                 {
                     string json_text = response.Content;
@@ -499,8 +524,14 @@ namespace Capstone
                     Console.WriteLine(response.ErrorMessage);
                     Console.WriteLine(response.ErrorException);
                 }
+                
             }
             parentSearch:
+            if (loadingText != null)
+            {
+                RunOnUiThread(() => { loadingText.Text = "|||....|"; });
+            }
+            
             //Scan through the parent list and get their information from the footprint database
             List<Fingerprint> fpList = new List<Fingerprint>();
             for (int j = 0; j < arpList.Count; j++)
@@ -512,6 +543,13 @@ namespace Capstone
                 request.AddHeader("content-type", "application/json");
                 IRestResponse response = client.Execute(request);
                 Console.WriteLine(response.Content);
+                if (j > arpList.Count / 2)
+                {
+                    if (loadingText != null)
+                    {
+                        RunOnUiThread(() => { loadingText.Text = "||||...|"; });
+                    }
+                }
                 if (response.IsSuccessful)
                 {
                     string json_text = response.Content;
@@ -529,6 +567,10 @@ namespace Capstone
                     Console.WriteLine(response.ErrorMessage);
                     Console.WriteLine(response.ErrorException);
                 }
+            }
+            if (loadingText != null)
+            {
+                RunOnUiThread(() => { loadingText.Text = "|||||..|"; });
             }
             //The Value with the least difference overall
             int lowest = 99999999;
@@ -555,6 +597,10 @@ namespace Capstone
                     place = k;
                     lowest = sum;
                 }
+            }
+            if (loadingText != null)
+            {
+                RunOnUiThread(() => { loadingText.Text = "||||||.|"; });
             }
             double lat = fpList[place].fp_latitude;
             double lon = fpList[place].fp_longitude;
@@ -589,11 +635,24 @@ namespace Capstone
             }
             if (displayNavData && wifiText != null)
             {
-                RunOnUiThread(() => { wifiText.Text = "\nLat: " + lat + "\nLong: " + lon; });
+
+                RunOnUiThread(() => {
+                    wifiText.Text = "\nLat: " + lat + "\nLong: " + lon; });
             }
+            if (displayNavData && loadingText != null)
+            {
+
+                RunOnUiThread(() => {
+                    loadingText.Text = "||||||||";
+                });
+            }
+            
             if (destination != null)
             {
-                createRoute();
+                RunOnUiThread(() =>
+                {
+                    createRoute();
+                });
             }
             polling = false;
         }
