@@ -45,7 +45,7 @@ namespace Capstone
 
         bool polling = false;
         //Start as true for wifi localization, false for gps
-        bool PollSwitch = false;
+        bool PollSwitch = true;
         bool displayNavData = false;
 
         //Map vars
@@ -554,6 +554,10 @@ namespace Capstone
             if (displayNavData && wifiText != null)
             {
                 RunOnUiThread(() => { wifiText.Text = "\nLat: " + lat + "\nLong: " + lon; });
+            }
+            if (destination != null)
+            {
+                createRoute();
             }
             polling = false;
         }

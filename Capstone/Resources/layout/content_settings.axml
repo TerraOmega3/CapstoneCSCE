@@ -16,6 +16,7 @@
 		android:minWidth="25px"
 		android:minHeight="25px"
 		android:onClick="toggle_polling"
+		android:contentDescription="Button to toggle between wireless or GPS coordinates."
 		android:id="@+id/toggle_poll" />
 		
 
