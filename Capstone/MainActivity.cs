@@ -46,7 +46,7 @@ namespace Capstone
 
         bool polling = false;
         //Start as true for wifi localization, false for gps
-        bool PollSwitch = false;
+        bool PollSwitch = true;
         bool displayNavData = false;
 
         //Map vars
@@ -54,7 +54,6 @@ namespace Capstone
         Marker marker;
         Marker destination;
         GoogleMap map;
-
         //Direction vars
         HttpClient webclient = new HttpClient();
         Polyline polyline = null;
@@ -67,7 +66,21 @@ namespace Capstone
             map = m;
             map.UiSettings.CompassEnabled = true;
             map.SetOnMapClickListener(this);
-                
+            if (marker != null)
+            {
+                //Update map camera on first run only
+                CameraPosition.Builder builder = CameraPosition.InvokeBuilder();
+                builder.Target(new LatLng(marker.Position.Latitude, marker.Position.Longitude));
+                builder.Zoom(18);
+                builder.Bearing(155);
+                builder.Tilt(65);
+
+                CameraPosition cameraPosition = builder.Build();
+                CameraUpdate cameraUpdate = CameraUpdateFactory.NewCameraPosition(cameraPosition);
+                map.MoveCamera(cameraUpdate);
+                marker = map.AddMarker(new MarkerOptions().SetPosition(new LatLng(marker.Position.Latitude, marker.Position.Longitude)).SetTitle("currentLoc"));
+            }
+
         }
 
         public void OnMapClick(LatLng point)
@@ -96,6 +109,26 @@ namespace Capstone
                 // Permission is not granted. If necessary display rationale & request.
 
             }
+            //Click the search button to search for a destination.
+            Button locationSearch = (Button)FindViewById(Resource.Id.search_button);
+            locationSearch.Click += onMapSearch;
+
+            //If you decide to press enter instead of the button then just click the button
+            EditText DestSearch = (EditText)FindViewById(Resource.Id.Content_search);
+            DestSearch.EditorAction += (sender, e) => {
+                if (e.ActionId == ImeAction.Search)
+                {
+                    locationSearch.PerformClick();
+                }
+                else
+                {
+                    e.Handled = false;
+                }
+            };
+           
+
+            //Update marker to current loc
+            
         }
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -539,7 +572,6 @@ namespace Capstone
             }
             double lat = fpList[place].fp_latitude;
             double lon = fpList[place].fp_longitude;
-
             RunOnUiThread(() =>
             {
                 //Put marker down on found position, remove previous marker
@@ -572,6 +604,10 @@ namespace Capstone
             if (displayNavData && wifiText != null)
             {
                 RunOnUiThread(() => { wifiText.Text = "\nLat: " + lat + "\nLong: " + lon; });
+            }
+            if (destination != null)
+            {
+                createRoute();
             }
             polling = false;
         }
@@ -619,23 +655,36 @@ namespace Capstone
             if (id == Resource.Id.nav_map)
             {
                 displayNavData = false;
-                marker = null;
                 layout = inflater.Inflate(Resource.Layout.content_map, null);
+                mainLayout.RemoveAllViews();
+                mainLayout.AddView(layout);
                 CreateMap();
             }
             else if (id == Resource.Id.nav_loc)
             {
                 displayNavData = true;
                 layout = inflater.Inflate(Resource.Layout.content_navigation, null);
+                mainLayout.RemoveAllViews();
+                mainLayout.AddView(layout);
             }
             else if (id == Resource.Id.nav_set)
             {
                 displayNavData = false;
                 layout = inflater.Inflate(Resource.Layout.content_settings, null);
+                mainLayout.RemoveAllViews();
+                mainLayout.AddView(layout);
+                Button toggle = (Button)FindViewById(Resource.Id.toggle_poll);
+                if (PollSwitch)
+                {
+                    toggle.Text = "Localize is Active.";
+                }
+                else
+                {
+                    toggle.Text = "Footprint is Active.";
+                }
             }
 
-            mainLayout.RemoveAllViews();
-            mainLayout.AddView(layout);
+            
 
             DrawerLayout drawer = FindViewById<DrawerLayout>(Resource.Id.drawer_layout);
             drawer.CloseDrawer(GravityCompat.Start);
