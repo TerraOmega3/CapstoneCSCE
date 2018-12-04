@@ -189,16 +189,16 @@ namespace Capstone
                 Yi = slopeB * (Xi - Bx) + By;
             }
             bool right = false;
-            if (Px > Cx)
+            if (lines[1].Longitude > mPos.Longitude)
                 right = true;
             if (right)
             {
-                if (Xi > Cx)
+                if (Xi > mPos.Latitude)
                     return true;
             }
             else
             {
-                if (Xi < Cx)
+                if (Xi < mPos.Latitude)
                     return true;
             }
             return false;
@@ -223,7 +223,7 @@ namespace Capstone
                 {
                     myVib.Vibrate(100);
                     Console.WriteLine("INTERSECTION!!!!!!!!!!!!!!!!!!!!!!!!!");
-                    Console.WriteLine("Heading: " + cHeading);
+                   // Console.WriteLine("Heading: " + cHeading);
                 }
             };
             Task.Run(() => { CrossCompass.Current.Start(); });
