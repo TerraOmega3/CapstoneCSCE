@@ -189,16 +189,16 @@ namespace Capstone
                 Yi = slopeB * (Xi - Bx) + By;
             }
             bool right = false;
-            if (lines[1].Longitude > mPos.Longitude)
+            if (Px > Cx)
                 right = true;
             if (right)
             {
-                if (Xi > mPos.Latitude)
+                if (Xi > Cx)
                     return true;
             }
             else
             {
-                if (Xi < mPos.Latitude)
+                if (Xi < Cx)
                     return true;
             }
             return false;
